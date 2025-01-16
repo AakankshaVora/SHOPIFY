@@ -3,11 +3,11 @@ import mongoose, {Schema} from "mongoose";
 const categorySchema = new mongoose.Schema(
     {
         storeId: {
-            tpye:mongoose.Schema.Types.objecId,
+            tpye:mongoose.Schema.Types.objectId,
             ref:"MasterDB"
         },
         categoryName:{
-            tpye:String,
+            type:String,
             required:true
         },
         description:{

@@ -4,21 +4,21 @@ import mongoose, {Schema} from "mongoose";
 const FAQSchema = new mongoose.Schema(
     {
         storeId:{
-            tpye:mongoose.Schema.Types.objecId,
+            tpye:mongoose.Schema.Types.objectId,
             ref:"MasterDB",
             required:true
         },
         categoryId:{
-            type:mongoose.Schema.Types.objecId,
+            type:mongoose.Schema.Types.objectId,
             ref:"Category",
             required:true
         },
         question:{
-            tpye:String,
+            type:String,
             required:true
         },
         answer:{
-            tpye:String,
+            type:String,
             required:true
         },
         isActive:{

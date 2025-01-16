@@ -32,7 +32,7 @@ const MasterDBSchema = new mongoose.Schema
         plan:{
             type:String,
             enum:["free","basic","premium"],
-            default:false,
+            default:"free",
         },
         lasSynced:{
             type:Date,
