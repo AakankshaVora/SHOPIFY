@@ -3,7 +3,7 @@ import mongoose, {Schema} from "mongoose";
 const categorySchema = new mongoose.Schema(
     {
         storeId: {
-            tpye:mongoose.Schema.Types.objectId,
+            type:mongoose.Schema.Types.ObjectId,
             ref:"MasterDB"
         },
         categoryName:{

@@ -1,4 +1,5 @@
-import { Category } from "../models/category.model";
+import {Category} from "../models/category.model.js";
+import {MasterDB} from "../models/MasterDB.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 

@@ -3,13 +3,10 @@ import mongoose, {Schema} from "mongoose";
 const ratingSchema = new mongoose.Schema(
     {
         FAQId:{
-            tpye:mongoose.Schema.Types.objectId,
+            type:mongoose.Schema.Types.ObjectId,
             ref:"FAQ",
             required:true
         },
-        // customerIp:{
-        //     type:String
-        // },
         rating:{
             type:Number,
             required:true,

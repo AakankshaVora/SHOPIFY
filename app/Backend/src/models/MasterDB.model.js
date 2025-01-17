@@ -40,4 +40,4 @@ const MasterDBSchema = new mongoose.Schema
     },
     {timestamps:true}
 );
-export default MasterDB = mongoose.model("MasterDB", MasterDBSchema)
+export const MasterDB = mongoose.model("MasterDB", MasterDBSchema)
