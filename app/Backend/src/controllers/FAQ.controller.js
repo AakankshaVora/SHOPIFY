@@ -27,7 +27,6 @@ export const createFAQ = asyncHandler(async(req,res,) =>{
         console.error("Error creating FAQ:", error);
         throw new ApiError(500, "Something went wrong while creating FAQ.");
     }
-
 });
 
 export const getFAQsByCategory =asyncHandler(async(req,res) =>{

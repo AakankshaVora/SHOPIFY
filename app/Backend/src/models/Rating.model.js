@@ -3,7 +3,7 @@ import mongoose, { Schema } from "mongoose";
 const ratingSchema = new mongoose.Schema(
     {
         FAQId:{
-            tpye:mongoose.Schema.Types.objectId,
+            type:mongoose.Schema.Types.objectId,
             ref:"FAQ",
             required:true
         },
