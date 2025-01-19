@@ -7,7 +7,7 @@ export async function loader() {
 export default function FAQ() {
   return (
     <iframe
-      src={`http://localhost:5173/home`} // Replace with your Vite build's Home page path
+      src={`http://localhost:5173`} // Replace with your Vite build's Home page path
       style={{
         width: "100%",
         height: "100vh",
