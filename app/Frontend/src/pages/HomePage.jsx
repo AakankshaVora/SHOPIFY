@@ -80,6 +80,13 @@ const HomePage = () => {
                     >
                       {stat.title}
                     </Text>
+                    <div
+                      style={{
+                        fontSize: "24px",
+                        marginTop: "15px", // Added margin for gap
+                      }}
+                    >
+                    </div>
                     <Button
                       fullWidth
                       primary
@@ -90,7 +97,6 @@ const HomePage = () => {
                         alignItems: "center",
                         fontSize: "20px",
                         marginTop: "20px",     
-                
                       }}
                     >
                       {stat.value}
