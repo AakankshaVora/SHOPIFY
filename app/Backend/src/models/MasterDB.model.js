@@ -34,10 +34,11 @@ const MasterDBSchema = new mongoose.Schema
             enum:["free","basic","premium"],
             default:"free",
         },
-        lasSynced:{
+        lastSynced:{
             type:Date,
         }
     },
     {timestamps:true}
 );
-export const MasterDB = mongoose.model("MasterDB", MasterDBSchema)
+// export const MasterDB = mongoose.model("MasterDB", MasterDBSchema)
+export const MasterDB = mongoose.models.MasterDB || mongoose.model("MasterDB", MasterDBSchema);

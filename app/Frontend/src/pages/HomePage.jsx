@@ -1,5 +1,14 @@
 import React from "react";
-import { Page, Layout, Card, Button, Text } from "@shopify/polaris";
+import { useState } from "react";
+import {
+  Page,
+  Layout,
+  Card,
+  Button,
+  Text,
+  Modal,
+  TextField,
+} from "@shopify/polaris";
 
 const HomePage = () => {
   const stats = {
@@ -41,7 +50,8 @@ const HomePage = () => {
                 }}
               >
                 This dashboard helps you manage your categories, FAQs, and
-                customer ratings efficiently. Use the options below to get started.
+                customer ratings efficiently. Use the options below to get
+                started.
               </p>
             </Card>
           </Layout.Section>
@@ -59,7 +69,10 @@ const HomePage = () => {
                 {[
                   { title: "Total Categories", value: stats.totalCategories },
                   { title: "Total FAQs", value: stats.totalFAQs },
-                  { title: "Average Rating", value: `${stats.averageRating} / 5` },
+                  {
+                    title: "Average Rating",
+                    value: `${stats.averageRating} / 5`,
+                  },
                   { title: "FAQ Views", value: stats.faqViews },
                 ].map((stat, index) => (
                   <Card
@@ -76,7 +89,10 @@ const HomePage = () => {
                     <Text
                       as="h3"
                       variant="headingMd"
-                      style={{ color: "RGBA(235,235,235,1)", marginBottom: "10px" }}
+                      style={{
+                        color: "RGBA(235,235,235,1)",
+                        marginBottom: "10px",
+                      }}
                     >
                       {stat.title}
                     </Text>
@@ -85,8 +101,7 @@ const HomePage = () => {
                         fontSize: "24px",
                         marginTop: "15px", // Added margin for gap
                       }}
-                    >
-                    </div>
+                    ></div>
                     <Button
                       fullWidth
                       primary
@@ -96,7 +111,7 @@ const HomePage = () => {
                         justifyContent: "center",
                         alignItems: "center",
                         fontSize: "20px",
-                        marginTop: "20px",     
+                        marginTop: "20px",
                       }}
                     >
                       {stat.value}
@@ -179,5 +194,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
-
