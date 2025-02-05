@@ -2,7 +2,7 @@ import { Modal, TextField } from "@shopify/polaris";
 import { useState } from "react";
 import { authenticate } from "../shopify.server";
 import { useFetcher } from "@remix-run/react";
-import { json } from "@remix-run/node";
+import { json,redirect } from "@remix-run/node";
 import { MasterDB } from "../Backend/src/models/MasterDB.model.js";
 import connectDB from "./database/connect.js";
 
@@ -39,6 +39,7 @@ export const action = async ({ request }) => {
     }
 
     let store = await MasterDB.findOne({ shopifyDomain: session.shop });
+    console.log("Store Found:", store);
 
     if (!store) {
       store = new MasterDB({
@@ -55,7 +56,7 @@ export const action = async ({ request }) => {
     }
 
     await store.save();
-    return json({ success: true });
+    return redirect("/home");
   } catch (error) {
     console.error("Database error:", error);
     return json({ error: "Database operation failed" }, { status: 500 });

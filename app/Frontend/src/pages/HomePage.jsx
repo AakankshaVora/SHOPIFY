@@ -1,14 +1,5 @@
 import React from "react";
-import { useState } from "react";
-import {
-  Page,
-  Layout,
-  Card,
-  Button,
-  Text,
-  Modal,
-  TextField,
-} from "@shopify/polaris";
+import { Page, Layout, Card, Button, Text } from "@shopify/polaris";
 
 const HomePage = () => {
   const stats = {
@@ -27,6 +18,13 @@ const HomePage = () => {
       }}
     >
       <Page title="FAQ Generator Dashboard" subtitle="Manage Your Store's FAQs">
+        {/* Header Section */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "20px" }}>
+          <Button primary onClick={() => (window.location.href = "/change-email")} style={{ backgroundColor: "black", color: "white" }}>
+            Change Business Email
+          </Button>
+        </div>
+
         <Layout>
           {/* Welcome Section */}
           <Layout.Section>
@@ -46,12 +44,9 @@ const HomePage = () => {
                   margin: "10px 0",
                   fontSize: "14px",
                   lineHeight: "1.8",
-                  color: "RGBA()",
                 }}
               >
-                This dashboard helps you manage your categories, FAQs, and
-                customer ratings efficiently. Use the options below to get
-                started.
+                This dashboard helps you manage your categories, FAQs, and customer ratings efficiently.
               </p>
             </Card>
           </Layout.Section>
@@ -62,17 +57,14 @@ const HomePage = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
                   gap: "20px",
                 }}
               >
-                {[
+                {[ 
                   { title: "Total Categories", value: stats.totalCategories },
                   { title: "Total FAQs", value: stats.totalFAQs },
-                  {
-                    title: "Average Rating",
-                    value: `${stats.averageRating} / 5`,
-                  },
+                  { title: "Average Rating", value: `${stats.averageRating} / 5` },
                   { title: "FAQ Views", value: stats.faqViews },
                 ].map((stat, index) => (
                   <Card
@@ -96,20 +88,12 @@ const HomePage = () => {
                     >
                       {stat.title}
                     </Text>
-                    <div
-                      style={{
-                        fontSize: "24px",
-                        marginTop: "15px", // Added margin for gap
-                      }}
-                    ></div>
+                    <div style={{ fontSize: "24px", marginTop: "15px" }}></div>
                     <Button
                       fullWidth
                       primary
                       style={{
                         height: "50px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
                         fontSize: "20px",
                         marginTop: "20px",
                       }}
@@ -128,9 +112,8 @@ const HomePage = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                   gap: "20px",
-                  height: "auto",
                 }}
               >
                 <Card
@@ -138,16 +121,10 @@ const HomePage = () => {
                   sectioned
                   style={{
                     backgroundColor: "RGBA(48,48,48,1)",
-                    color: "RGBA(235,235,235,1)",
                     borderRadius: "8px",
                   }}
                 >
-                  <p
-                    style={{
-                      marginBottom: "10px",
-                      color: "RGBA(48,48,48,1)",
-                    }}
-                  >
+                  <p style={{ marginBottom: "10px" }}>
                     Organize your FAQs into categories for easier navigation.
                   </p>
                   <Button
@@ -164,16 +141,10 @@ const HomePage = () => {
                   sectioned
                   style={{
                     backgroundColor: "RGBA(48,48,48,1)",
-                    color: "RGBA(235,235,235,1)",
                     borderRadius: "8px",
                   }}
                 >
-                  <p
-                    style={{
-                      marginBottom: "10px",
-                      color: "RGBA(48,48,48,1)",
-                    }}
-                  >
+                  <p style={{ marginBottom: "10px" }}>
                     Create, edit, and delete FAQs to assist your customers.
                   </p>
                   <Button
@@ -187,6 +158,37 @@ const HomePage = () => {
               </div>
             </Card>
           </Layout.Section>
+
+          {/* How You Can Manage FAQs Section */}
+          <Layout.Section>
+            <Card title="How You Can Manage Your FAQs" sectioned>
+              <Text variant="headingMd" style={{ marginBottom: "10px" }}>
+                Here's how you can manage your FAQs effectively:
+              </Text>
+              <ul>
+                <li>Organize FAQs by categories for a cleaner, more intuitive FAQ page.</li>
+                <li>Edit and update answers quickly to ensure customers always have the latest info.</li>
+                <li>Track views and ratings to identify which FAQs are most helpful to your customers.</li>
+                <li>Create new FAQs easily with pre-designed templates.</li>
+              </ul>
+            </Card>
+          </Layout.Section>
+
+          {/* How We Can Manage Your Store Section */}
+          <Layout.Section>
+            <Card title="How We Can Manage Your Store" sectioned>
+              <Text variant="headingMd" style={{ marginBottom: "10px" }}>
+                We help streamline your store management by:
+              </Text>
+              <ul>
+                <li>Organizing and updating your store's FAQ section for better customer experience.</li>
+                <li>Improving search and categorization for faster customer support resolution.</li>
+                <li>Providing analytics to monitor FAQ engagement and uncover customer needs.</li>
+                <li>Enhancing customer satisfaction with easy-to-find solutions and FAQs.</li>
+              </ul>
+            </Card>
+          </Layout.Section>
+          
         </Layout>
       </Page>
     </div>

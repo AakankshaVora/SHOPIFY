@@ -6,7 +6,7 @@ import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { authenticate } from "../shopify.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
-
+ 
 export const loader = async ({ request }) => {
   await authenticate.admin(request);
 
@@ -23,7 +23,7 @@ export default function App() {
           Home
         </Link>
         <Link to="/app/additional">Additional page</Link>
-        <Link to="/home">Home</Link>
+        <Link to="/app/home">Home</Link>
       </NavMenu>
       <Outlet />
     </AppProvider>

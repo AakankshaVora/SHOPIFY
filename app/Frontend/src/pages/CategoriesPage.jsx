@@ -1,5 +1,5 @@
-// src/pages/CategoriesPage.jsx
 import React, { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Page,
   Layout,
@@ -14,7 +14,8 @@ import {
 } from "@shopify/polaris";
 
 const CategoriesPage = () => {
-  // Sample data for categories
+  const navigate = useNavigate();
+
   const [categories, setCategories] = useState([
     {
       name: "Home Appliances",
@@ -37,45 +38,48 @@ const CategoriesPage = () => {
     createdAt: "",
     isActive: false,
   });
-
   const [isEditing, setIsEditing] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const toggleModal = useCallback(() => {
-    // When closing the modal, reset the form values
     if (modalActive) {
-      setNewCategory({ name: "", description: "", createdAt: "", isActive: false });
+      setNewCategory({
+        name: "",
+        description: "",
+        createdAt: "",
+        isActive: false,
+      });
       setIsEditing(false);
       setEditingIndex(null);
     }
     setModalActive(!modalActive);
   }, [modalActive]);
 
-  // Handle input changes for the modal form
   const handleInputChange = (field) => (value) => {
     setNewCategory({ ...newCategory, [field]: value });
   };
 
-  // Add or update category
   const handleSaveCategory = () => {
     if (isEditing) {
-      // Update existing category
       const updatedCategories = [...categories];
       updatedCategories[editingIndex] = newCategory;
       setCategories(updatedCategories);
     } else {
-      // Add new category
       setCategories([...categories, newCategory]);
     }
 
-    // Reset modal state
-    setNewCategory({ name: "", description: "", createdAt: "", isActive: false });
+    setNewCategory({
+      name: "",
+      description: "",
+      createdAt: "",
+      isActive: false,
+    });
     setIsEditing(false);
     setEditingIndex(null);
     toggleModal();
   };
 
-  // Open modal for editing an existing category
   const handleEditCategory = (index) => {
     setNewCategory(categories[index]);
     setIsEditing(true);
@@ -83,24 +87,27 @@ const CategoriesPage = () => {
     toggleModal();
   };
 
-  // Delete a category
   const handleDeleteCategory = (index) => {
-    const updatedCategories = categories.filter((_, i) => i !== index);
-    setCategories(updatedCategories);
+    setCategories(categories.filter((_, i) => i !== index));
   };
 
-  // Toggle isActive status
-  const toggleIsActive = (index) => {
-    const updatedCategories = [...categories];
-    updatedCategories[index].isActive = !updatedCategories[index].isActive;
-    setCategories(updatedCategories);
+  const handleCategoryClick = (categoryName) => {
+    navigate(`/faq?category=${encodeURIComponent(categoryName)}`);
   };
 
-  // Table rows data
-  const rows = categories.map((category, index) => [
-    category.name || "N/A", // Display "N/A" if no name is set
-    category.description || "N/A", // Display "N/A" if no description is set
-    category.createdAt || "N/A", // Display "N/A" if no date is set
+  // Filtering categories based on the search query
+  const filteredCategories = categories.filter(
+    (category) =>
+      category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      category.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const rows = filteredCategories.map((category, index) => [
+    <Button plain onClick={() => handleCategoryClick(category.name)}>
+      {category.name || "N/A"}
+    </Button>,
+    category.description || "N/A",
+    category.createdAt || "N/A",
     <Badge status={category.isActive ? "success" : "warning"}>
       {category.isActive ? "Active" : "Inactive"}
     </Badge>,
@@ -108,7 +115,11 @@ const CategoriesPage = () => {
       <Button onClick={() => handleEditCategory(index)} size="slim">
         Edit
       </Button>
-      <Button destructive onClick={() => handleDeleteCategory(index)} size="slim">
+      <Button
+        destructive
+        onClick={() => handleDeleteCategory(index)}
+        size="slim"
+      >
         Delete
       </Button>
     </div>,
@@ -117,34 +128,67 @@ const CategoriesPage = () => {
   return (
     <Page title="Categories" subtitle="Manage your store's FAQ categories">
       <Layout>
-        {/* Total Categories Summary */}
         <Layout.Section>
           <Card sectioned>
             <Text as="h2" variant="headingLg">
-              Total Categories: {categories.length}
+              Total Categories: {filteredCategories.length}
             </Text>
           </Card>
         </Layout.Section>
 
-        {/* Categories Table */}
+        {/* Table Section with Search Bar at Top Right */}
         <Layout.Section>
           <Card sectioned>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                flexDirection: "row",
+                gap: "10px",
+                marginBottom: "16px",
+                justifyContent: "flex-end",
+              }}
+            >
+              <label
+                htmlFor="searchField"
+                style={{
+                  marginBottom: "8px",
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                }}
+              >
+                Search:
+              </label>
+              <TextField
+                id="searchField"
+                value={searchQuery}
+                onChange={(value) => setSearchQuery(value)}
+                placeholder="Search Category"
+                autoComplete="off"
+                style={{ width: "400px" }} // Adjust the width for the search field
+              />
+            </div>
+
             <DataTable
               columnContentTypes={["text", "text", "text", "text", "text"]}
-              headings={["Category Name", "Description", "Created At", "Is Active", "Actions"]}
+              headings={[
+                "Category Name",
+                "Description",
+                "Created At",
+                "Is Active",
+                "Actions",
+              ]}
               rows={rows}
             />
           </Card>
         </Layout.Section>
 
-        {/* Add Category Button */}
         <Layout.Section>
           <Button primary onClick={toggleModal}>
             Add Category
           </Button>
         </Layout.Section>
 
-        {/* Add/Edit Modal */}
         <Modal
           open={modalActive}
           onClose={toggleModal}
@@ -153,12 +197,7 @@ const CategoriesPage = () => {
             content: isEditing ? "Save Changes" : "Add Category",
             onAction: handleSaveCategory,
           }}
-          secondaryActions={[
-            {
-              content: "Cancel",
-              onAction: toggleModal,
-            },
-          ]}
+          secondaryActions={[{ content: "Cancel", onAction: toggleModal }]}
         >
           <Modal.Section>
             <TextField
@@ -182,11 +221,13 @@ const CategoriesPage = () => {
               onChange={handleInputChange("createdAt")}
               type="date"
             />
-            <Checkbox
-              label="Is Active"
-              checked={newCategory.isActive}
-              onChange={handleInputChange("isActive")}
-            />
+            <div style={{ marginTop: "12px" }}>
+              <Checkbox
+                label="Is Active"
+                checked={newCategory.isActive}
+                onChange={handleInputChange("isActive")}
+              />
+            </div>
           </Modal.Section>
         </Modal>
       </Layout>
