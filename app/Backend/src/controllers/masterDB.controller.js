@@ -3,7 +3,7 @@ import shopify from "../shopify.server.js"; // Import Shopify API instance
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 
-//Controller to Fetch Store Details using Shopify Admin API
+// Controller to Fetch Store Details using Shopify Admin API
 export const fetchStoreDetails = asyncHandler(async (req, res) => {
     try {
 
@@ -31,6 +31,43 @@ export const fetchStoreDetails = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Failed to fetch store details.");
     }
 })
+
+export const fetchAndSaveStoreDetails = async (req, res) => {
+    try {
+      const session = res.locals.shopifySession;
+      if (!session) {
+        return res.status(401).json({ error: "Unauthorized request" });
+      }
+  
+      const client = new shopify.api.clients.Rest({ session });
+      const response = await client.get({ path: "shop" });
+  
+      const { name, domain, id, email, plan_name } = response.body.shop;
+  
+      // Upsert the store data in MongoDB (insert if new, update if existing)
+      const store = await MasterDB.findOneAndUpdate(
+        { shopifyDomain: domain }, // Search by Shopify domain
+        {
+          storeName: name,
+          shopifyDomain: domain,
+          storeId: id.toString(),
+          email: email,
+          plan: plan_name.toLowerCase(),
+          isActive: true,
+          lastSynced: new Date(),
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+  
+      return res.status(200).json({
+        message: "Store details fetched and stored successfully.",
+        store,
+      });
+    } catch (error) {
+      console.error("Error fetching and storing store details:", error);
+      return res.status(500).json({ error: "Failed to fetch/store store details."});
+  }
+  };
 
 export const upsertStore = asyncHandler(async (req, res) => {
     try {
@@ -155,5 +192,3 @@ export const getAllActiveStores = asyncHandler(async(req,res) => {
         throw new ApiError(500,"Failed to fetch active stores.")
     }
 })
-
-
