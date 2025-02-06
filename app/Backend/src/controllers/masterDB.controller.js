@@ -192,6 +192,3 @@ export const getAllActiveStores = asyncHandler(async(req,res) => {
         throw new ApiError(500,"Failed to fetch active stores.")
     }
 })
-
-
-//xyzabc
