@@ -82,7 +82,8 @@ const HomePage = () => {
                       as="h3"
                       variant="headingMd"
                       style={{
-                        color: "RGBA(235,235,235,1)",
+                        color: 
+                        "RGBA(235,235,235,1)",
                         marginBottom: "10px",
                       }}
                     >
