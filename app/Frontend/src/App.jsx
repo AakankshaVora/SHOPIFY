@@ -5,7 +5,7 @@ import CategoriesPage from "./pages/CategoriesPage";
 import FAQsPage from "./pages/FAQPage.jsx";
 import RatingsPage from "./pages/RatingsPage";
 import EmailModal from "./components/EmailModal.jsx";
-import FAQ from "./components/Faq.jsx";
+import FAQ from "./components/FAQ.jsx";
 
 const App = () => {
   return (
