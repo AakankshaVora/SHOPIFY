@@ -1,36 +1,36 @@
 import { MasterDB } from "../models/MasterDB.model.js";
-import shopify from "../shopify.server.js"; // Import Shopify API instance
+import shopify from "../../../shopify.server.js"; // Import Shopify API instance
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 
-// Controller to Fetch Store Details using Shopify Admin API
-export const fetchStoreDetails = asyncHandler(async (req, res) => {
-    try {
+//Controller to Fetch Store Details using Shopify Admin API
+// export const fetchStoreDetails = asyncHandler(async (req, res) => {
+//     try {
 
-        const session = res.locals.shopifySession; // Shopify session middleware
-        if (!session) {
-            throw new ApiError(401, "Unauthorized request");
-        }
+//         const session = res.locals.shopifySession; // Shopify session middleware
+//         if (!session) {
+//             throw new ApiError(401, "Unauthorized request");
+//         }
 
-        const client = new shopify.api.clients.Rest({ session });
-        const response = await client.get({ path: "shop" }); // Fetch store details
+//         const client = new shopify.api.clients.Rest({ session });
+//         const response = await client.get({ path: "shop" }); // Fetch store details
 
-        const { name, domain, id, email, plan_name } = response.body.shop;
+//         const { name, domain, id, email, plan_name } = response.body.shop;
 
-        return res.status(200).json({
-            storeName: name,
-            shopifyDomain: domain,
-            storeId: id.toString(),
-            email: email,
-            plan: plan_name.toLowerCase(), // Convert plan to match schema
-        });
+//         return res.status(200).json({
+//             storeName: name,
+//             shopifyDomain: domain,
+//             storeId: id.toString(),
+//             email: email,
+//             plan: plan_name.toLowerCase(), // Convert plan to match schema
+//         });
 
 
-    } catch (error) {
-        console.error("Error fetching store details:", error);
-        throw new ApiError(500, "Failed to fetch store details.");
-    }
-})
+//     } catch (error) {
+//         console.error("Error fetching store details:", error);
+//         throw new ApiError(500, "Failed to fetch store details.");
+//     }
+// })
 
 export const fetchAndSaveStoreDetails = async (req, res) => {
     try {
