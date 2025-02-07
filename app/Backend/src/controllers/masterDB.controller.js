@@ -1,5 +1,5 @@
 import { MasterDB } from "../models/MasterDB.model.js";
-import shopify from "../shopify.server.js"; // Import Shopify API instance
+import shopify from "../../../shopify.server.js"; // Import Shopify API instance
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 
