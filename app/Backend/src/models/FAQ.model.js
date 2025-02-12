@@ -1,36 +1,34 @@
-import mongoose, {Schema} from "mongoose";
-
+import mongoose from "mongoose";
 
 const FAQSchema = new mongoose.Schema(
-    {
-        storeId:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"MasterDB",
-            required:true
-        },
-        categoryId:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Category",
-            required:true
-        },
-        question:{
-            type:String,
-            required:true
-        },
-        answer:{
-            type:String,
-            required:true
-        },
-        isActive:{
-            type:Boolean,
-            default:true
-        },
-        viewCount:{
-            type:Number,
-            default:0,
-        }
+  {
+    storeId: {
+      type: String,
+      required: true,
     },
-    {timestamps:true}
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+    question: {
+      type: String,
+      required: true,
+    },
+    answer: {
+      type: String,
+      required: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    viewCount: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { timestamps: true }
 );
 
-export const FAQ = mongoose.model("FAQ", FAQSchema)
+export const FAQ = mongoose.model("FAQ", FAQSchema);

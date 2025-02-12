@@ -8,7 +8,7 @@ export const addRating = asyncHandler(async (req, res) => {
     try {
         const { FAQId } = req.params;
 
-        const { storeId,customerId, comment, rating } = req.body
+        const { storeId, customerId, comment, rating } = req.body
 
         const faq = await FAQ.findById({ _id: FAQId });
 

@@ -1,292 +1,265 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
-  Modal,
-  TextField,
-  Select,
-  Button,
   Page,
   Layout,
   Card,
+  Button,
   DataTable,
-  Text,
+  Modal,
+  TextField,
+  Select,
 } from "@shopify/polaris";
+import { AiFillStar, AiOutlineStar } from "react-icons/ai";
 
 const FAQPage = () => {
   const [categories, setCategories] = useState([
-    "Electronics",
-    "Home Appliances",
-    "Furniture",
-    "Clothing",
-    "Beauty",
+    {
+      name: "Home Appliances",
+      faqs: [
+        {
+          question: "How to clean a refrigerator?",
+          answerType: "text",
+          answer: "You can clean a refrigerator with a damp cloth and mild soap.",
+          rating: 4.5,
+        },
+        {
+          question: "How to use a microwave oven?",
+          answerType: "text",
+          answer: "Refer to the user manual for detailed instructions.",
+          rating: 3.8,
+        },
+      ],
+    },
+    {
+      name: "Electronics",
+      faqs: [
+        {
+          question: "What is the warranty period for this product?",
+          answerType: "text",
+          answer: "The warranty period is one year from the date of purchase.",
+          rating: 4.7,
+        },
+      ],
+    },
   ]);
 
-  const [faqs, setFaqs] = useState({
-    Electronics: [
-      {
-        question: "What is the battery life of the phone?",
-        answerType: "text",
-        answer: "The phone has a battery life of up to 10 hours.",
-      },
-      {
-        question: "Does this laptop have a touchscreen?",
-        answerType: "text",
-        answer: "Yes, this laptop comes with a touchscreen.",
-      },
-    ],
-    "Home Appliances": [
-      {
-        question: "How do I install the air conditioner?",
-        answerType: "text",
-        answer: "Follow the manual instructions for installation.",
-      },
-      {
-        question: "What is the warranty period for the washing machine?",
-        answerType: "text",
-        answer: "The washing machine comes with a 2-year warranty.",
-      },
-    ],
-    Furniture: [
-      {
-        question: "Is the sofa easy to assemble?",
-        answerType: "text",
-        answer: "Yes, the sofa is easy to assemble with the included manual.",
-      },
-    ],
-    Clothing: [
-      {
-        question: "What material is the jacket made of?",
-        answerType: "text",
-        answer: "The jacket is made of 100% polyester.",
-      },
-    ],
-    Beauty: [
-      {
-        question: "Is this product suitable for sensitive skin?",
-        answerType: "text",
-        answer:
-          "Yes, the product is dermatologically tested and suitable for sensitive skin.",
-      },
-    ],
-  });
-
-  const [searchQuery, setSearchQuery] = useState(""); // Define searchQuery state
   const [modalActive, setModalActive] = useState(false);
-  const [newFaq, setNewFaq] = useState({
-    category: "",
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(null);
+  const [newFAQ, setNewFAQ] = useState({
     question: "",
     answerType: "text",
     answer: "",
+    file: null,
   });
-
   const [isEditing, setIsEditing] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
 
-  const toggleModal = () => {
-    setModalActive(!modalActive);
-    if (!modalActive) {
-      // Reset modal for adding a new FAQ
-      setNewFaq({ category: "", question: "", answerType: "text", answer: "" });
+  const toggleModal = useCallback(() => {
+    if (modalActive) {
+      setNewFAQ({ question: "", answerType: "text", answer: "", file: null });
       setIsEditing(false);
-      setEditingCategory(null);
       setEditingIndex(null);
     }
-  };
+    setModalActive(!modalActive);
+  }, [modalActive]);
 
   const handleInputChange = (field) => (value) => {
-    setNewFaq({ ...newFaq, [field]: value });
+    setNewFAQ({ ...newFAQ, [field]: value });
   };
 
-  const handleSaveFaq = () => {
+  const handleFileUpload = (file) => {
+    setNewFAQ((prev) => ({ ...prev, file }));
+  };
+
+  const handleAddOrEditFAQ = () => {
+    const updatedCategories = [...categories];
+    const faqs = updatedCategories[currentCategoryIndex].faqs;
+
     if (isEditing) {
-      // Edit existing FAQ
-      const updatedFaqs = { ...faqs };
-      updatedFaqs[editingCategory][editingIndex] = newFaq;
-      setFaqs(updatedFaqs);
+      faqs[editingIndex] = { ...faqs[editingIndex], ...newFAQ };
     } else {
-      // Add new FAQ
-      const updatedFaqs = { ...faqs };
-      updatedFaqs[newFaq.category] = [
-        ...(updatedFaqs[newFaq.category] || []),
-        newFaq,
-      ];
-      setFaqs(updatedFaqs);
+      faqs.push({ ...newFAQ, rating: 0 }); // Default static rating
     }
 
-    // Close modal after saving
+    setCategories(updatedCategories);
     toggleModal();
   };
 
-  const handleEditFaq = (category, index) => {
-    setNewFaq(faqs[category][index]);
+  const handleEditFAQ = (categoryIndex, faqIndex) => {
+    setCurrentCategoryIndex(categoryIndex);
+    setNewFAQ(categories[categoryIndex].faqs[faqIndex]);
     setIsEditing(true);
-    setEditingCategory(category);
-    setEditingIndex(index);
+    setEditingIndex(faqIndex);
     toggleModal();
   };
 
-  const handleDeleteFaq = (category, index) => {
-    const updatedFaqs = { ...faqs };
-    updatedFaqs[category].splice(index, 1);
-    setFaqs(updatedFaqs);
+  const handleDeleteFAQ = (categoryIndex, faqIndex) => {
+    const updatedCategories = [...categories];
+    updatedCategories[categoryIndex].faqs.splice(faqIndex, 1);
+    setCategories(updatedCategories);
   };
 
-  const rows = (category) => {
+  const handleOpenAddModal = (categoryIndex) => {
+    setCurrentCategoryIndex(categoryIndex);
+    toggleModal();
+  };
+
+  const renderStars = (rating) => {
+    const filledStars = Math.floor(rating);
+    const emptyStars = 5 - filledStars;
+
     return (
-      faqs[category]
-        ?.filter((faq) => faq.question.toLowerCase().includes(searchQuery.toLowerCase())) // Apply search filter
-        .map((faq, index) => [
-          faq.question,
-          faq.answerType === "text" ? (
-            faq.answer
-          ) : faq.answerType === "image" ? (
-            <img src={faq.answer} alt="FAQ" style={{ width: "100px" }} />
-          ) : (
-            <video src={faq.answer} controls style={{ width: "100px" }} />
-          ),
-          <div style={{ display: "flex", gap: "8px" }}>
-            <Button onClick={() => handleEditFaq(category, index)} size="slim">
-              Edit
-            </Button>
-            <Button
-              destructive
-              onClick={() => handleDeleteFaq(category, index)}
-              size="slim"
-            >
-              Delete
-            </Button>
-          </div>,
-        ]) || []
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {Array(filledStars)
+          .fill(0)
+          .map((_, index) => (
+            <AiFillStar
+              key={index}
+              style={{ color: "#FFD700", marginRight: "2px" }}
+            />
+          ))}
+        {Array(emptyStars)
+          .fill(0)
+          .map((_, index) => (
+            <AiOutlineStar
+              key={index}
+              style={{ color: "#FFD700", marginRight: "2px" }}
+            />
+          ))}
+      </div>
     );
   };
 
   return (
-    <Page title="Category Wise FAQs">
-      {/* Search Field (Only once at the top) */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-end",
-          flexDirection: "row",
-          gap: "10px",
-          marginBottom: "16px",
-          justifyContent: "flex-end",
-          marginTop: "20px",
-        }}
-      >
-        <label
-          htmlFor="searchField"
-          style={{
-            marginBottom: "8px",
-            fontWeight: "bold",
-            fontSize: "16px",
-          }}
-        >
-          Search:
-        </label>
-        <TextField
-          id="searchField"
-          value={searchQuery}
-          onChange={(value) => setSearchQuery(value)}
-          placeholder="Search FAQ by question"
-          autoComplete="off"
-          style={{ width: "400px" }} // Adjust the width for the search field
-        />
-      </div>
-
+    <Page title="FAQs" subtitle="Manage FAQs for each category">
       <Layout>
-        {categories.map((category) => (
-          <Layout.Section key={category} style={{ marginBottom: "30px" }}>
+        {categories.map((category, categoryIndex) => (
+          <Layout.Section key={categoryIndex}>
             <Card sectioned>
               <Layout>
                 <Layout.Section>
-                  <Text as="h2" variant="headingLg">
-                    {category}
-                  </Text>
+                  <h2
+                    style={{
+                      fontSize: "1.25rem",
+                      fontWeight: "bold",
+                      marginBottom: "16px",
+                      marginLeft: "10px",
+                    }}
+                  >
+                    {category.name}
+                  </h2>
                 </Layout.Section>
               </Layout>
-
               <DataTable
-                columnContentTypes={["text", "text", "text"]}
-                headings={["Question", "Answer", "Actions"]}
-                rows={rows(category)}
+                columnContentTypes={["text", "text", "numeric", "text"]}
+                headings={["Question", "Answer", "Rating", "Actions"]}
+                rows={category.faqs.map((faq, faqIndex) => [
+                  faq.question,
+                  faq.answerType === "text"
+                    ? faq.answer
+                    : faq.file
+                    ? faq.file.name
+                    : "No file uploaded",
+                  faq.rating.toFixed(1),
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <Button
+                      size="slim"
+                      onClick={() => handleEditFAQ(categoryIndex, faqIndex)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      destructive
+                      size="slim"
+                      onClick={() => handleDeleteFAQ(categoryIndex, faqIndex)}
+                    >
+                      Delete
+                    </Button>
+                  </div>,
+                ])}
               />
-
               <div
                 style={{
+                  marginTop: "16px",
                   display: "flex",
-                  justifyContent: "flex-start",
-                  marginTop: "10px",
-                  marginLeft: "10px",
+                  justifyContent: "space-between",
                 }}
               >
-                <Button
-                  primary
-                  onClick={() => {
-                    setNewFaq({ ...newFaq, category }); // Set category when Add FAQ button is clicked
-                    toggleModal();
-                  }}
-                >
+                <Button primary onClick={() => handleOpenAddModal(categoryIndex)}>
                   Add FAQ
                 </Button>
               </div>
             </Card>
           </Layout.Section>
         ))}
-      </Layout>
 
-      {/* Add/Edit FAQ Modal */}
-      <Modal
-        open={modalActive}
-        onClose={toggleModal}
-        title={isEditing ? "Edit FAQ" : "Add FAQ"}
-        primaryAction={{
-          content: isEditing ? "Save Changes" : "Add FAQ",
-          onAction: handleSaveFaq,
-        }}
-        secondaryActions={[{ content: "Cancel", onAction: toggleModal }]}
-      >
-        <Modal.Section>
-          <TextField
-            label="Question"
-            value={newFaq.question}
-            onChange={handleInputChange("question")}
-            autoComplete="off"
-            placeholder="Enter question"
-          />
-
-          <Select
-            label="Answer Type"
-            options={[
-              { label: "Text", value: "text" },
-              { label: "Image", value: "image" },
-              { label: "Video", value: "video" },
-            ]}
-            onChange={handleInputChange("answerType")}
-            value={newFaq.answerType}
-          />
-
-          {newFaq.answerType === "text" && (
+        <Modal
+          open={modalActive}
+          onClose={toggleModal}
+          title={isEditing ? "Edit FAQ" : "Add FAQ"}
+          primaryAction={{
+            content: isEditing ? "Save Changes" : "Add FAQ",
+            onAction: handleAddOrEditFAQ,
+          }}
+          secondaryActions={[{ content: "Cancel", onAction: toggleModal }]}
+        >
+          <Modal.Section>
             <TextField
-              label="Answer"
-              value={newFaq.answer}
-              onChange={handleInputChange("answer")}
+              label="Question"
+              value={newFAQ.question}
+              onChange={handleInputChange("question")}
               autoComplete="off"
-              multiline
-              placeholder="Enter answer"
+              placeholder="Enter question"
             />
-          )}
-
-          {(newFaq.answerType === "image" || newFaq.answerType === "video") && (
-            <TextField
-              type="file"
-              label={`Upload ${newFaq.answerType}`}
-              onChange={handleInputChange("answer")}
-              accept={newFaq.answerType === "image" ? "image/" : "video/"}
-            />
-          )}
-        </Modal.Section>
-      </Modal>
+            <div style={{ marginTop: "12px" }}>
+              <Select
+                label="Answer Type"
+                options={[
+                  { label: "Text", value: "text" },
+                  { label: "Image", value: "image" },
+                  { label: "Video", value: "video" },
+                ]}
+                value={newFAQ.answerType}
+                onChange={handleInputChange("answerType")}
+              />
+            </div>
+            {newFAQ.answerType === "text" && (
+              <TextField
+                label="Answer"
+                value={newFAQ.answer}
+                onChange={handleInputChange("answer")}
+                autoComplete="off"
+                multiline
+                placeholder="Enter text answer"
+              />
+            )}
+            {(newFAQ.answerType === "image" || newFAQ.answerType === "video") && (
+              <div style={{ marginTop: "12px" }}>
+                <label
+                  style={{
+                    fontWeight: "bold",
+                    display: "block",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Upload {newFAQ.answerType === "image" ? "Image" : "Video"}:
+                </label>
+                <input
+                  type="file"
+                  accept={newFAQ.answerType === "image" ? "image/*" : "video/*"}
+                  onChange={(e) => handleFileUpload(e.target.files[0])}
+                />
+              </div>
+            )}
+          </Modal.Section>
+        </Modal>
+      </Layout>
     </Page>
   );
 };

@@ -5,6 +5,6 @@ import{
 
 const router = express.Router();
 
-router.get("/save-store", fetchAndSaveStoreDetails);
+router.post("/save-store", fetchAndSaveStoreDetails);
 
 export default router;
