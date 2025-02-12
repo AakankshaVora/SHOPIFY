@@ -19,7 +19,8 @@ const FAQPage = () => {
         {
           question: "How to clean a refrigerator?",
           answerType: "text",
-          answer: "You can clean a refrigerator with a damp cloth and mild soap.",
+          answer:
+            "You can clean a refrigerator with a damp cloth and mild soap.",
           rating: 4.5,
         },
         {
@@ -53,6 +54,7 @@ const FAQPage = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const toggleModal = useCallback(() => {
     if (modalActive) {
@@ -136,9 +138,59 @@ const FAQPage = () => {
     );
   };
 
+  const filteredFAQs = (faqs) => {
+    return faqs.filter(
+      (faq) =>
+        faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        faq.answer.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  };
+
   return (
     <Page title="FAQs" subtitle="Manage FAQs for each category">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-end",
+          flexDirection: "row",
+          gap: "10px",
+          marginBottom: "16px",
+          justifyContent: "flex-end",
+          width: "100%",
+          minWidth: "700px",
+        }}
+      >
+        <label
+          htmlFor="searchField"
+          style={{
+            marginBottom: "8px",
+            fontWeight: "bold",
+            fontSize: "16px",
+          }}
+        >
+          Search:
+        </label>
+        <div style={{ flexGrow: 1, maxWidth: "200px" }}>
+          <TextField
+            value={searchTerm}
+            onChange={(value) => setSearchTerm(value)}
+            placeholder="Search by question or answer"
+            autoComplete="off"
+          />
+        </div>
+      </div>
+
       <Layout>
+        {/* <Layout.Section>
+          <h3>Search:</h3>
+          <TextField
+            value={searchTerm}
+            onChange={(value) => setSearchTerm(value)}
+            placeholder="Search by question or answer"
+            autoComplete="off"
+          />
+        </Layout.Section> */}
+
         {categories.map((category, categoryIndex) => (
           <Layout.Section key={categoryIndex}>
             <Card sectioned>
@@ -159,13 +211,13 @@ const FAQPage = () => {
               <DataTable
                 columnContentTypes={["text", "text", "numeric", "text"]}
                 headings={["Question", "Answer", "Rating", "Actions"]}
-                rows={category.faqs.map((faq, faqIndex) => [
+                rows={filteredFAQs(category.faqs).map((faq, faqIndex) => [
                   faq.question,
                   faq.answerType === "text"
                     ? faq.answer
                     : faq.file
-                    ? faq.file.name
-                    : "No file uploaded",
+                      ? faq.file.name
+                      : "No file uploaded",
                   faq.rating.toFixed(1),
                   <div style={{ display: "flex", gap: "8px" }}>
                     <Button
@@ -191,7 +243,10 @@ const FAQPage = () => {
                   justifyContent: "space-between",
                 }}
               >
-                <Button primary onClick={() => handleOpenAddModal(categoryIndex)}>
+                <Button
+                  primary
+                  onClick={() => handleOpenAddModal(categoryIndex)}
+                >
                   Add FAQ
                 </Button>
               </div>
@@ -239,7 +294,8 @@ const FAQPage = () => {
                 placeholder="Enter text answer"
               />
             )}
-            {(newFAQ.answerType === "image" || newFAQ.answerType === "video") && (
+            {(newFAQ.answerType === "image" ||
+              newFAQ.answerType === "video") && (
               <div style={{ marginTop: "12px" }}>
                 <label
                   style={{

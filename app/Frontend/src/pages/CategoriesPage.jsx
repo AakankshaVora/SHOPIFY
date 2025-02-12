@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Page,
@@ -8,47 +8,52 @@ import {
   DataTable,
   TextField,
   Modal,
-  Checkbox,
-  Badge,
   Text,
+  Spinner,
 } from "@shopify/polaris";
+import { getCategoriesByStore } from "../../api";
 
 const CategoriesPage = () => {
   const navigate = useNavigate();
 
-  const [categories, setCategories] = useState([
-    {
-      name: "Home Appliances",
-      description: "Appliances for daily household use",
-      createdAt: "2025-01-01",
-      isActive: true,
-    },
-    {
-      name: "Electronics",
-      description: "Electronic gadgets and devices",
-      createdAt: "2025-01-15",
-      isActive: false,
-    },
-  ]);
-
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true); // For API loading state
   const [modalActive, setModalActive] = useState(false);
   const [newCategory, setNewCategory] = useState({
     name: "",
     description: "",
-    createdAt: "",
-    isActive: false,
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const STORE_ID = "offline_test-learning-app.myshopify.com";
+
+  console.log("Categories:", categories);
+  
+
+  // Fetch categories from the API
+  const fetchCategories = async () => {
+    setLoading(true);
+    try {
+      const fetchedCategories = await getCategoriesByStore(STORE_ID);
+      setCategories(fetchedCategories); 
+    } catch (error) {
+      console.error("Failed to fetch categories:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   const toggleModal = useCallback(() => {
     if (modalActive) {
       setNewCategory({
         name: "",
         description: "",
-        createdAt: "",
-        isActive: false,
       });
       setIsEditing(false);
       setEditingIndex(null);
@@ -63,17 +68,21 @@ const CategoriesPage = () => {
   const handleSaveCategory = () => {
     if (isEditing) {
       const updatedCategories = [...categories];
-      updatedCategories[editingIndex] = newCategory;
+      updatedCategories[editingIndex] = {
+        ...categories[editingIndex],
+        ...newCategory,
+      };
       setCategories(updatedCategories);
     } else {
-      setCategories([...categories, newCategory]);
+      setCategories([
+        ...categories,
+        { ...newCategory, createdAt: new Date().toISOString().split("T")[0] },
+      ]);
     }
 
     setNewCategory({
       name: "",
       description: "",
-      createdAt: "",
-      isActive: false,
     });
     setIsEditing(false);
     setEditingIndex(null);
@@ -99,7 +108,7 @@ const CategoriesPage = () => {
   const filteredCategories = categories.filter(
     (category) =>
       category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.description.toLowerCase().includes(searchQuery.toLowerCase()),
+      category.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const rows = filteredCategories.map((category, index) => [
@@ -107,10 +116,8 @@ const CategoriesPage = () => {
       {category.name || "N/A"}
     </Button>,
     category.description || "N/A",
-    category.createdAt || "N/A",
-    <Badge status={category.isActive ? "success" : "warning"}>
-      {category.isActive ? "Active" : "Inactive"}
-    </Badge>,
+    category.totalFaqs || 0, // Display total FAQs
+    category.createdAt || "N/A", // Display the createdAt value
     <div style={{ display: "flex", gap: "8px" }}>
       <Button onClick={() => handleEditCategory(index)} size="slim">
         Edit
@@ -169,17 +176,23 @@ const CategoriesPage = () => {
               />
             </div>
 
-            <DataTable
-              columnContentTypes={["text", "text", "text", "text", "text"]}
-              headings={[
-                "Category Name",
-                "Description",
-                "Created At",
-                "Is Active",
-                "Actions",
-              ]}
-              rows={rows}
-            />
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "20px" }}>
+                <Spinner accessibilityLabel="Loading categories" />
+              </div>
+            ) : (
+              <DataTable
+                columnContentTypes={["text", "text", "text", "text", "text"]}
+                headings={[
+                  "Category Name",
+                  "Description",
+                  "Total FAQs",
+                  "Created At",
+                  "Actions",
+                ]}
+                rows={rows}
+              />
+            )}
           </Card>
         </Layout.Section>
 
@@ -215,19 +228,6 @@ const CategoriesPage = () => {
               multiline
               placeholder="Enter category description"
             />
-            <TextField
-              label="Created At"
-              value={newCategory.createdAt}
-              onChange={handleInputChange("createdAt")}
-              type="date"
-            />
-            <div style={{ marginTop: "12px" }}>
-              <Checkbox
-                label="Is Active"
-                checked={newCategory.isActive}
-                onChange={handleInputChange("isActive")}
-              />
-            </div>
           </Modal.Section>
         </Modal>
       </Layout>

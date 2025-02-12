@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "c2643c6cd114dab497b2e1764c69a9df"
-application_url = "https://actor-newton-valve-desert.trycloudflare.com"
+application_url = "https://italia-comfortable-seafood-wal.trycloudflare.com"
 embedded = true
 name = "FAQ"
 handle = "faq-39"
@@ -23,9 +23,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://actor-newton-valve-desert.trycloudflare.com/auth/callback",
-  "https://actor-newton-valve-desert.trycloudflare.com/auth/shopify/callback",
-  "https://actor-newton-valve-desert.trycloudflare.com/api/auth/callback"
+  "https://italia-comfortable-seafood-wal.trycloudflare.com/auth/callback",
+  "https://italia-comfortable-seafood-wal.trycloudflare.com/auth/shopify/callback",
+  "https://italia-comfortable-seafood-wal.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

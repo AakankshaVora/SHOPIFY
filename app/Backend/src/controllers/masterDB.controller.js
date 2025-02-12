@@ -197,42 +197,101 @@ import { MasterDB } from "../models/MasterDB.model.js";
 import shopify from "../../../shopify.server.js"; // Import Shopify API instance
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
+import { authenticate } from "../../../shopify.server.js";
+
 
 // Middleware to verify Shopify authentication
-const verifyShopifyAuth = async (req, res, next) => {
+// export const verifyShopifyAuth = async (req, res, next) => {
+//     try {
+//         const session = res.locals.shopifySession;
+//         if (!session || !session.shop || !session.accessToken) {
+//             return res.status(401).json({ error: "Unauthorized request. Please log in via Shopify OAuth." });
+//         }
+//         next();
+//     } catch (error) {
+//         console.error("Authentication Error:", error);
+//         return res.status(401).json({ error: "Invalid session. Please reauthenticate." });
+//     }
+// };
+
+export const verifyShopifySession = async (req, res, next) => {
     try {
-        const session = res.locals.shopifySession;
-        if (!session || !session.shop || !session.accessToken) {
-            return res.status(401).json({ error: "Unauthorized request. Please log in via Shopify OAuth." });
+        const { session } = await authenticate.admin(req, res);
+        if (!session) {
+            return res.status(401).json({ error: "Unauthorized: Missing session" });
         }
+        res.locals.shopifySession = session; // Store session for controllers
         next();
     } catch (error) {
-        console.error("Authentication Error:", error);
-        return res.status(401).json({ error: "Invalid session. Please reauthenticate." });
-    }
+        console.error("Shopify Auth Error:", error);
+        res.status(401).json({ error: "Authentication failed" });
+    }
 };
 
 // Controller to Fetch & Store Store Details (OAuth Authenticated)
+// export const fetchAndSaveStoreDetails = asyncHandler(async (req, res) => {
+//         // const session = res.locals.shopifySession;
+//         const session = await authenticate.admin(req);
+//         if (!session) {
+//             throw new ApiError(401, "Unauthorized request");
+//         }
+
+//         console.log("Session:", session);
+        
+
+//         const client = new shopify.api.clients.Rest({ session });
+//         const response = await client.get({ path: "shop" });
+
+//         const { name, domain, id, email, plan_name } = response.body.shop;
+
+//         // Upsert Store Data in MongoDB
+//         const store = await MasterDB.findOneAndUpdate(
+//             { shopifyDomain: domain }, 
+//             {
+//                 storeName: name,
+//                 shopifyDomain: domain,
+//                 storeId: id.toString(),
+//                 email: email,
+//                 plan: plan_name.toLowerCase(),
+//                 isActive: true,
+//                 lastSynced: new Date(),
+//             },
+//             { upsert: true, new: true, setDefaultsOnInsert: true }
+//         );
+
+//         return res.status(200).json({
+//             message: "Store details fetched and stored successfully.",
+//             store,
+//         });
+  
+// });
+
 export const fetchAndSaveStoreDetails = asyncHandler(async (req, res) => {
-    try {
-        const session = res.locals.shopifySession;
+        // Authenticate Admin before accessing Shopify API
+        const { session } = await authenticate.admin(req);
+
         if (!session) {
-            throw new ApiError(401, "Unauthorized request");
+            throw new ApiError(401, "Unauthorized request: Missing session");
         }
 
+        // Use authenticated Shopify session to fetch store details
         const client = new shopify.api.clients.Rest({ session });
         const response = await client.get({ path: "shop" });
 
+        if (!response.body || !response.body.shop) {
+            throw new ApiError(500, "Failed to retrieve shop data.");
+        }
+
         const { name, domain, id, email, plan_name } = response.body.shop;
 
-        // Upsert Store Data in MongoDB
+        // Upsert store data in MongoDB
         const store = await MasterDB.findOneAndUpdate(
-            { shopifyDomain: domain }, 
+            { shopifyDomain: domain },
             {
                 storeName: name,
                 shopifyDomain: domain,
                 storeId: id.toString(),
-                email: email,
+                email,
                 plan: plan_name.toLowerCase(),
                 isActive: true,
                 lastSynced: new Date(),
@@ -244,10 +303,6 @@ export const fetchAndSaveStoreDetails = asyncHandler(async (req, res) => {
             message: "Store details fetched and stored successfully.",
             store,
         });
-    } catch (error) {
-        console.error("Error fetching and storing store details:", error);
-        throw new ApiError(500, "Failed to fetch/store store details.");
-    }
 });
 
 // Controller to Upsert Store (Authenticated)
