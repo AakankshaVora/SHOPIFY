@@ -1,40 +1,41 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Page, Layout, Card, Text, DataTable, Button, Modal, TextField, Select } from "@shopify/polaris";
+import { fetchFaqsByCategory } from "../../api/index.js";
 
 const FAQ = () => {
   const [searchParams] = useSearchParams();
-  const categoryName = searchParams.get("category"); // Get category from URL
-  
+  const categoryId = searchParams.get("category"); // ObjectId from URL
+
   const [faqs, setFaqs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [modalActive, setModalActive] = useState(false);
   const [newFaq, setNewFaq] = useState({ question: "", answerType: "text", answer: "", rating: "5" });
   const [isEditing, setIsEditing] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // Search query state
+  const [editingId, setEditingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    if (categoryName) {
-      // Simulating fetching FAQs from API
-      const dummyFAQs = {
-        "Home Appliances": [
-          { question: "How to clean a washing machine?", answerType: "text", answer: "Use vinegar and baking soda.", rating: "4" },
-          { question: "Best way to maintain a refrigerator?", answerType: "text", answer: "Clean coils regularly.", rating: "5" },
-        ],
-        Electronics: [
-          { question: "How to extend battery life?", answerType: "text", answer: "Avoid overcharging your phone.", rating: "3" },
-        ],
-      };
-
-      setFaqs(dummyFAQs[categoryName] || []);
+    if (categoryId) {
+      setLoading(true);
+      fetchFaqsByCategory(categoryId)
+        .then((data) => {
+          setFaqs(data || []);
+          setLoading(false);
+        })
+        .catch((err) => {
+          setError("Failed to fetch FAQs.");
+          setLoading(false);
+        });
     }
-  }, [categoryName]);
+  }, [categoryId]);
 
   const toggleModal = useCallback(() => {
     if (modalActive) {
       setNewFaq({ question: "", answerType: "text", answer: "", rating: "5" });
       setIsEditing(false);
-      setEditingIndex(null);
+      setEditingId(null);
     }
     setModalActive(!modalActive);
   }, [modalActive]);
@@ -43,168 +44,99 @@ const FAQ = () => {
     setNewFaq({ ...newFaq, [field]: value });
   };
 
-  const handleSaveFaq = () => {
-    if (isEditing) {
-      const updatedFaqs = [...faqs];
-      updatedFaqs[editingIndex] = newFaq;
-      setFaqs(updatedFaqs);
-    } else {
-      setFaqs([...faqs, newFaq]);
-    }
-
-    toggleModal();
-  };
-
-  const handleEditFaq = (index) => {
-    setNewFaq(faqs[index]);
+  const handleEditFaq = (faqId) => {
+    const selectedFaq = faqs.find((faq) => faq._id === faqId);
+    setNewFaq(selectedFaq);
     setIsEditing(true);
-    setEditingIndex(index);
+    setEditingId(faqId);
     toggleModal();
   };
 
-  const handleDeleteFaq = (index) => {
-    setFaqs(faqs.filter((_, i) => i !== index));
+  const handleDeleteFaq = (faqId) => {
+    setFaqs(faqs.filter((faq) => faq._id !== faqId));
   };
 
-  // Filter FAQs based on the search query
   const filteredFaqs = faqs.filter(
     (faq) =>
       faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Function to display star ratings
   const renderStars = (rating) => {
     const starCount = parseInt(rating, 10) || 0;
     return "★".repeat(starCount) + "☆".repeat(5 - starCount);
   };
 
-  const rows = filteredFaqs.map((faq, index) => [
+  const rows = filteredFaqs.map((faq) => [
     faq.question,
-    faq.answerType === "text" ? faq.answer : <Text as="span">{faq.answerType.toUpperCase()}</Text>,
-    renderStars(faq.rating), // Display star ratings
+    <Text as="span">{faq.answer}</Text>,
+    renderStars(faq.rating),
     <div style={{ display: "flex", gap: "8px" }}>
-      <Button onClick={() => handleEditFaq(index)} size="slim">Edit</Button>
-      <Button destructive onClick={() => handleDeleteFaq(index)} size="slim">Delete</Button>
+      <Button onClick={() => handleEditFaq(faq._id)} size="slim">Edit</Button>
+      <Button destructive onClick={() => handleDeleteFaq(faq._id)} size="slim">Delete</Button>
     </div>
   ]);
 
   return (
-    <Page title={`FAQs for ${categoryName || "Category"}`}>
+    <Page title={`FAQs for ${categoryId || "Category"}`}>
       <Layout>
-        {/* Category Header */}
         <Layout.Section>
           <Card sectioned>
-            <Text as="h2" variant="headingLg">Category: {categoryName || "N/A"}</Text>
+            <Text as="h2" variant="headingLg">Category ID: {categoryId || "N/A"}</Text>
           </Card>
         </Layout.Section>
 
-        {/* FAQ Table */}
         <Layout.Section>
           <Card sectioned>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-end",
-                flexDirection: "row",
-                gap: "10px",
-                marginBottom: "10px",
-                justifyContent: "flex-end",
-              }}
-            >
-              <label
-                htmlFor="searchField"
-                style={{
-                  marginBottom: "8px",
-                  fontWeight: "bold",
-                  fontSize: "16px",
-                }}
-              >
-                Search:
-              </label>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "10px" }}>
               <TextField
-                id="searchField"
                 value={searchQuery}
                 onChange={(value) => setSearchQuery(value)}
-                placeholder="Search Category"
+                placeholder="Search FAQs"
                 autoComplete="off"
-                style={{ width: "400px" }}
               />
             </div>
-            <DataTable
-              columnContentTypes={["text", "text", "text", "text"]}
-              headings={["Question", "Answer Type", "Rating", "Actions"]}
-              rows={rows}
-            />
+
+            {loading ? (
+              <Text>Loading FAQs...</Text>
+            ) : error ? (
+              <Text>{error}</Text>
+            ) : faqs.length === 0 ? (
+              <Text>No FAQs available for this category.</Text>
+            ) : (
+              <DataTable
+                columnContentTypes={["text", "text", "text", "text"]}
+                headings={["Question", "Answer Type", "Rating", "Actions"]}
+                rows={rows}
+              />
+            )}
           </Card>
         </Layout.Section>
 
-        {/* Add FAQ Button */}
         <Layout.Section>
           <Button primary onClick={toggleModal}>Add FAQ</Button>
         </Layout.Section>
 
-        {/* Add/Edit FAQ Modal */}
         <Modal
           open={modalActive}
           onClose={toggleModal}
           title={isEditing ? "Edit FAQ" : "Add FAQ"}
-          primaryAction={{
-            content: isEditing ? "Save Changes" : "Add FAQ",
-            onAction: handleSaveFaq,
-          }}
+          primaryAction={{ content: isEditing ? "Save Changes" : "Add FAQ", onAction: () => {} }}
           secondaryActions={[{ content: "Cancel", onAction: toggleModal }]}
         >
           <Modal.Section>
-            <TextField
-              label="Question"
-              value={newFaq.question}
-              onChange={handleInputChange("question")}
-              autoComplete="off"
-              placeholder="Enter question"
-            />
-
+            <TextField label="Question" value={newFaq.question} onChange={handleInputChange("question")} autoComplete="off" />
             <Select
               label="Answer Type"
-              options={[
-                { label: "Text", value: "text" },
-                { label: "Image", value: "image" },
-                { label: "Video", value: "video" },
-              ]}
+              options={[{ label: "Text", value: "text" }, { label: "Image", value: "image" }, { label: "Video", value: "video" }]}
               onChange={handleInputChange("answerType")}
               value={newFaq.answerType}
             />
-
-            {newFaq.answerType === "text" && (
-              <TextField
-                label="Answer"
-                value={newFaq.answer}
-                onChange={handleInputChange("answer")}
-                autoComplete="off"
-                multiline
-                placeholder="Enter answer"
-              />
-            )}
-
-            {(newFaq.answerType === "image" || newFaq.answerType === "video") && (
-              <TextField
-                type="file"
-                label={`Upload ${newFaq.answerType}`}
-                onChange={handleInputChange("answer")}
-                accept={newFaq.answerType === "image" ? "image/*" : "video/*"}
-              />
-            )}
-
-            {/* Rating Select Dropdown */}
+            {newFaq.answerType === "text" && <TextField label="Answer" value={newFaq.answer} onChange={handleInputChange("answer")} autoComplete="off" multiline />}
+            {(newFaq.answerType === "image" || newFaq.answerType === "video") && <TextField type="file" label={`Upload ${newFaq.answerType}`} onChange={handleInputChange("answer")} accept={newFaq.answerType === "image" ? "image/*" : "video/*"} />}
             <Select
               label="Rating"
-              options={[
-                { label: "1 Star", value: "1" },
-                { label: "2 Stars", value: "2" },
-                { label: "3 Stars", value: "3" },
-                { label: "4 Stars", value: "4" },
-                { label: "5 Stars", value: "5" },
-              ]}
+              options={[{ label: "1 Star", value: "1" }, { label: "2 Stars", value: "2" }, { label: "3 Stars", value: "3" }, { label: "4 Stars", value: "4" }, { label: "5 Stars", value: "5" }]}
               onChange={handleInputChange("rating")}
               value={newFaq.rating}
             />
@@ -214,8 +146,5 @@ const FAQ = () => {
     </Page>
   );
 };
-
-
-
 
 export default FAQ;

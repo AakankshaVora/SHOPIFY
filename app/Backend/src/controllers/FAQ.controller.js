@@ -66,7 +66,7 @@ export const getFAQsByCategory = asyncHandler(async (req, res) => {
     throw new ApiError(404, "No FAQs found for this category.");
   }
   res
-    .status(500)
+    .status(200)
     .json(
       new ApiResponse(
         200,

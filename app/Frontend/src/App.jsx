@@ -6,6 +6,7 @@ import FAQsPage from "./pages/FAQPage.jsx";
 import RatingsPage from "./pages/RatingsPage";
 import EmailModal from "./components/EmailModal.jsx";
 import FAQ from "./components/FAQ.jsx";
+import CustomerDashboard from "./pages/CustomerDashboard.jsx";
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
       <Route path="/faq" element={<FAQ />} />
       <Route path="/ratings" element={<RatingsPage />} />
       <Route path="/change-email" element={<EmailModal />} />
+      <Route path="/dashboard" element={<CustomerDashboard />} />
     </Routes>
   );
 };
