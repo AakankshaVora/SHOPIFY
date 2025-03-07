@@ -1,17 +1,31 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Page, Layout, Card, Text, DataTable, Button, Modal, TextField, Select } from "@shopify/polaris";
-import { fetchFaqsByCategory } from "../../api/index.js";
+import {
+  Page,
+  Layout,
+  Card,
+  Text,
+  DataTable,
+  Button,
+  Modal,
+  TextField,
+  Select,
+} from "@shopify/polaris";
+import { fetchFaqsByCategory, deleteFAQById, updateFAQById } from "../../api/index.js";
 
 const FAQ = () => {
   const [searchParams] = useSearchParams();
-  const categoryId = searchParams.get("category"); // ObjectId from URL
+  const categoryId = searchParams.get("category");
 
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [modalActive, setModalActive] = useState(false);
-  const [newFaq, setNewFaq] = useState({ question: "", answerType: "text", answer: "", rating: "5" });
+  const [modalActive, setModalActive] = useState(false); // Correct
+  const [newFaq, setNewFaq] = useState({
+    question: "",
+    answerType: "text",
+    answer: "",
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,7 +38,7 @@ const FAQ = () => {
           setFaqs(data || []);
           setLoading(false);
         })
-        .catch((err) => {
+        .catch(() => {
           setError("Failed to fetch FAQs.");
           setLoading(false);
         });
@@ -33,7 +47,7 @@ const FAQ = () => {
 
   const toggleModal = useCallback(() => {
     if (modalActive) {
-      setNewFaq({ question: "", answerType: "text", answer: "", rating: "5" });
+      setNewFaq({ question: "", answerType: "text", answer: "" });
       setIsEditing(false);
       setEditingId(null);
     }
@@ -46,14 +60,43 @@ const FAQ = () => {
 
   const handleEditFaq = (faqId) => {
     const selectedFaq = faqs.find((faq) => faq._id === faqId);
-    setNewFaq(selectedFaq);
-    setIsEditing(true);
-    setEditingId(faqId);
-    toggleModal();
+    if (selectedFaq) {
+      setNewFaq({
+        question: selectedFaq.question || "",
+        answerType: selectedFaq.answerType || "text",
+        answer: selectedFaq.answer || "",
+      });
+      setIsEditing(true);
+      setEditingId(faqId);
+      setModalActive(true);
+    }
   };
 
-  const handleDeleteFaq = (faqId) => {
-    setFaqs(faqs.filter((faq) => faq._id !== faqId));
+  const handleSaveFaq = async () => {
+  try {
+    if (isEditing && editingId) {
+      const updatedFaq = await updateFAQById(editingId, newFaq);
+      
+      setFaqs((prevFaqs) =>
+        prevFaqs.map((faq) =>
+          faq._id === editingId ? { ...faq, ...newFaq } : faq
+        )
+      );
+    }
+    toggleModal();
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+
+  const handleDeleteFaq = async (faqId) => {
+    try {
+      await deleteFAQById(faqId);
+      setFaqs((prevFaqs) => prevFaqs.filter((faq) => faq._id !== faqId));
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const filteredFaqs = faqs.filter(
@@ -72,9 +115,13 @@ const FAQ = () => {
     <Text as="span">{faq.answer}</Text>,
     renderStars(faq.rating),
     <div style={{ display: "flex", gap: "8px" }}>
-      <Button onClick={() => handleEditFaq(faq._id)} size="slim">Edit</Button>
-      <Button destructive onClick={() => handleDeleteFaq(faq._id)} size="slim">Delete</Button>
-    </div>
+      <Button onClick={() => handleEditFaq(faq._id)} size="slim">
+        Edit
+      </Button>
+      <Button destructive onClick={() => handleDeleteFaq(faq._id)} size="slim">
+        Delete
+      </Button>
+    </div>,
   ]);
 
   return (
@@ -82,13 +129,22 @@ const FAQ = () => {
       <Layout>
         <Layout.Section>
           <Card sectioned>
-            <Text as="h2" variant="headingLg">Category ID: {categoryId || "N/A"}</Text>
+            <Text as="h2" variant="headingLg">
+              Category ID: {categoryId || "N/A"}
+            </Text>
           </Card>
         </Layout.Section>
 
         <Layout.Section>
           <Card sectioned>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "10px" }}>
+          <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+                marginBottom: "10px",
+              }}
+            >
               <TextField
                 value={searchQuery}
                 onChange={(value) => setSearchQuery(value)}
@@ -105,8 +161,8 @@ const FAQ = () => {
               <Text>No FAQs available for this category.</Text>
             ) : (
               <DataTable
-                columnContentTypes={["text", "text", "text", "text"]}
-                headings={["Question", "Answer Type", "Rating", "Actions"]}
+                columnContentTypes={["text", "text","text", "text"]}
+                headings={["Question", "Answer","Rating", "Actions"]}
                 rows={rows}
               />
             )}
@@ -114,32 +170,57 @@ const FAQ = () => {
         </Layout.Section>
 
         <Layout.Section>
-          <Button primary onClick={toggleModal}>Add FAQ</Button>
+          <Button primary onClick={toggleModal}>
+            Add FAQ
+          </Button>
         </Layout.Section>
 
         <Modal
           open={modalActive}
           onClose={toggleModal}
           title={isEditing ? "Edit FAQ" : "Add FAQ"}
-          primaryAction={{ content: isEditing ? "Save Changes" : "Add FAQ", onAction: () => {} }}
+          primaryAction={{
+            content: isEditing ? "Save Changes" : "Add FAQ",
+            onAction: handleSaveFaq,
+          }}
           secondaryActions={[{ content: "Cancel", onAction: toggleModal }]}
         >
           <Modal.Section>
-            <TextField label="Question" value={newFaq.question} onChange={handleInputChange("question")} autoComplete="off" />
+            <TextField
+              label="Question"
+              placeholder="Enter the question"
+              value={newFaq.question}
+              onChange={handleInputChange("question")}
+              autoComplete="off"
+            />
             <Select
               label="Answer Type"
-              options={[{ label: "Text", value: "text" }, { label: "Image", value: "image" }, { label: "Video", value: "video" }]}
+              options={[
+                { label: "Text", value: "text" },
+                { label: "Image", value: "image" },
+                { label: "Video", value: "video" },
+              ]}
               onChange={handleInputChange("answerType")}
               value={newFaq.answerType}
             />
-            {newFaq.answerType === "text" && <TextField label="Answer" value={newFaq.answer} onChange={handleInputChange("answer")} autoComplete="off" multiline />}
-            {(newFaq.answerType === "image" || newFaq.answerType === "video") && <TextField type="file" label={`Upload ${newFaq.answerType}`} onChange={handleInputChange("answer")} accept={newFaq.answerType === "image" ? "image/*" : "video/*"} />}
-            <Select
-              label="Rating"
-              options={[{ label: "1 Star", value: "1" }, { label: "2 Stars", value: "2" }, { label: "3 Stars", value: "3" }, { label: "4 Stars", value: "4" }, { label: "5 Stars", value: "5" }]}
-              onChange={handleInputChange("rating")}
-              value={newFaq.rating}
-            />
+            {newFaq.answerType === "text" && (
+              <TextField
+                label="Answer"
+                placeholder="Enter the answer"
+                value={newFaq.answer}
+                onChange={handleInputChange("answer")}
+                autoComplete="off"
+                multiline
+              />
+            )}
+            {(newFaq.answerType === "image" || newFaq.answerType === "video") && (
+              <TextField
+                type="file"
+                label={`Upload ${newFaq.answerType}`}
+                onChange={handleInputChange("answer")}
+                accept={newFaq.answerType === "image" ? "image/*" : "video/*"}
+              />
+            )}
           </Modal.Section>
         </Modal>
       </Layout>

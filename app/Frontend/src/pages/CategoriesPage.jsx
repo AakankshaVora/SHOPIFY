@@ -17,6 +17,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  getFaqCountByCategory,
 } from "../../api/index.js"; // Import API functions
 
 const CategoriesPage = () => {
@@ -36,19 +37,44 @@ const CategoriesPage = () => {
   const [toastActive, setToastActive] = useState(false); // Toast visibility
   const [deleteConfirmActive, setDeleteConfirmActive] = useState(false); // Delete confirmation modal visibility
   const [deleteIndex, setDeleteIndex] = useState(null); // Index of the category to delete
+  const [totalFaqsCount, setTotalFaqsCount] = useState(0);
 
   // Fetch categories from API
   useEffect(() => {
-    fetchAllCategories(storeId)
-      .then((data) => {
-        setCategories(data); // Set the fetched categories
-        setLoading(false);
-      })
-      .catch((error) => {
+    const fetchCategoriesWithFaqCount = async () => {
+      try {
+        setLoading(true);
+  
+        const categories = await fetchAllCategories(storeId);
+        if (!Array.isArray(categories)) {
+          console.error("Invalid categories data:", categories);
+          setLoading(false);
+          return;
+        }
+  
+        const categoriesWithFaqCount = await Promise.all(
+          categories.map(async (category) => {
+            try {
+              const totalFaqs = await getFaqCountByCategory(category._id);
+              return { ...category, totalFaqs };
+            } catch (error) {
+              console.error(`Error fetching FAQ count for category ${category._id}:`, error);
+              return { ...category, totalFaqs: 0 };
+            }
+          })
+        );
+  
+        setCategories(categoriesWithFaqCount);
+      } catch (error) {
         console.error("Failed to fetch categories:", error);
+      } finally {
         setLoading(false);
-      });
-  }, [categories]);
+      }
+    };
+  
+    fetchCategoriesWithFaqCount();
+  }, [storeId]); // Removed `categories` to prevent infinite re-renders.
+  
 
   // Toggle modal visibility
   const toggleModal = useCallback(() => {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   Page,
   Layout,
@@ -9,40 +9,11 @@ import {
   TextField,
   Select,
 } from "@shopify/polaris";
-import { AiFillStar, AiOutlineStar } from "react-icons/ai";
+import { getCategoriesWithFAQs, updateFAQByCategoryAndId, deleteFAQById } from "../../api/index.js";
 
 const FAQPage = () => {
-  const [categories, setCategories] = useState([
-    {
-      name: "Home Appliances",
-      faqs: [
-        {
-          question: "How to clean a refrigerator?",
-          answerType: "text",
-          answer:
-            "You can clean a refrigerator with a damp cloth and mild soap.",
-          rating: 4.5,
-        },
-        {
-          question: "How to use a microwave oven?",
-          answerType: "text",
-          answer: "Refer to the user manual for detailed instructions.",
-          rating: 3.8,
-        },
-      ],
-    },
-    {
-      name: "Electronics",
-      faqs: [
-        {
-          question: "What is the warranty period for this product?",
-          answerType: "text",
-          answer: "The warranty period is one year from the date of purchase.",
-          rating: 4.7,
-        },
-      ],
-    },
-  ]);
+  const storeId = "offline_test-learning-app.myshopify.com";
+  const [categories, setCategories] = useState([]);
 
   const [modalActive, setModalActive] = useState(false);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(null);
@@ -55,6 +26,20 @@ const FAQPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    getCategoriesWithFAQs(storeId)
+      .then((response) => {
+        if (response && response.success && Array.isArray(response.data)) {
+          setCategories(response.data);
+        } else {
+          console.error("Invalid data format received:", response);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch categories:", error);
+      });
+  }, [storeId]);
 
   const toggleModal = useCallback(() => {
     if (modalActive) {
@@ -73,32 +58,57 @@ const FAQPage = () => {
     setNewFAQ((prev) => ({ ...prev, file }));
   };
 
-  const handleAddOrEditFAQ = () => {
+  const handleAddOrEditFAQ = async () => {
     const updatedCategories = [...categories];
-    const faqs = updatedCategories[currentCategoryIndex].faqs;
+    const category = updatedCategories[currentCategoryIndex];
+    const faqs = category.faqs;
 
     if (isEditing) {
-      faqs[editingIndex] = { ...faqs[editingIndex], ...newFAQ };
+      const faqId = faqs[editingIndex]._id; // Assuming each FAQ has a unique _id
+      try {
+        await updateFAQByCategoryAndId(category._id, faqId, newFAQ); // API call
+        faqs[editingIndex] = { ...faqs[editingIndex], ...newFAQ };
+        setCategories(updatedCategories);
+      } catch (error) {
+        console.error("Error updating FAQ:", error);
+      }
     } else {
       faqs.push({ ...newFAQ, rating: 0 }); // Default static rating
+      setCategories(updatedCategories);
     }
 
-    setCategories(updatedCategories);
     toggleModal();
   };
 
   const handleEditFAQ = (categoryIndex, faqIndex) => {
     setCurrentCategoryIndex(categoryIndex);
-    setNewFAQ(categories[categoryIndex].faqs[faqIndex]);
+    const selectedFAQ = categories[categoryIndex].faqs[faqIndex];
+
+    setNewFAQ({
+      question: selectedFAQ.question || "",
+      answerType: selectedFAQ.answerType || "text",
+      answer: selectedFAQ.answer || "",
+      file: selectedFAQ.file || null,
+    });
+
     setIsEditing(true);
     setEditingIndex(faqIndex);
     toggleModal();
   };
 
-  const handleDeleteFAQ = (categoryIndex, faqIndex) => {
-    const updatedCategories = [...categories];
-    updatedCategories[categoryIndex].faqs.splice(faqIndex, 1);
-    setCategories(updatedCategories);
+  const handleDeleteFAQ = async (categoryIndex, faqIndex) => {
+    const faqId = categories[categoryIndex].faqs[faqIndex]._id;
+
+    console.log("Deleting FAQ:", faqId);
+    
+    try {
+      await deleteFAQById(faqId);
+      const updatedCategories = [...categories];
+      updatedCategories[categoryIndex].faqs.splice(faqIndex, 1);
+      setCategories(updatedCategories);
+    } catch (error) {
+      console.error("Error deleting FAQ:", error);
+    }
   };
 
   const handleOpenAddModal = (categoryIndex) => {
@@ -107,44 +117,16 @@ const FAQPage = () => {
   };
 
   const renderStars = (rating) => {
-    const filledStars = Math.floor(rating);
-    const emptyStars = 5 - filledStars;
-
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        {Array(filledStars)
-          .fill(0)
-          .map((_, index) => (
-            <AiFillStar
-              key={index}
-              style={{ color: "#FFD700", marginRight: "2px" }}
-            />
-          ))}
-        {Array(emptyStars)
-          .fill(0)
-          .map((_, index) => (
-            <AiOutlineStar
-              key={index}
-              style={{ color: "#FFD700", marginRight: "2px" }}
-            />
-          ))}
-      </div>
-    );
+    const starCount = parseInt(rating, 10) || 0;
+    return "★".repeat(starCount) + "☆".repeat(5 - starCount);
   };
 
-  const filteredFAQs = (faqs) => {
-    return faqs.filter(
+  const filteredFAQs = (faqs) =>
+    faqs.filter(
       (faq) =>
         faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        faq.answer.toLowerCase().includes(searchTerm.toLowerCase()),
+        faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  };
 
   return (
     <Page title="FAQs" subtitle="Manage FAQs for each category">
@@ -181,16 +163,6 @@ const FAQPage = () => {
       </div>
 
       <Layout>
-        {/* <Layout.Section>
-          <h3>Search:</h3>
-          <TextField
-            value={searchTerm}
-            onChange={(value) => setSearchTerm(value)}
-            placeholder="Search by question or answer"
-            autoComplete="off"
-          />
-        </Layout.Section> */}
-
         {categories.map((category, categoryIndex) => (
           <Layout.Section key={categoryIndex}>
             <Card sectioned>
@@ -204,7 +176,7 @@ const FAQPage = () => {
                       marginLeft: "10px",
                     }}
                   >
-                    {category.name}
+                    {category.categoryName}
                   </h2>
                 </Layout.Section>
               </Layout>
@@ -213,12 +185,8 @@ const FAQPage = () => {
                 headings={["Question", "Answer", "Rating", "Actions"]}
                 rows={filteredFAQs(category.faqs).map((faq, faqIndex) => [
                   faq.question,
-                  faq.answerType === "text"
-                    ? faq.answer
-                    : faq.file
-                      ? faq.file.name
-                      : "No file uploaded",
-                  faq.rating.toFixed(1),
+                  faq.answer,
+                  renderStars(faq.rating),
                   <div style={{ display: "flex", gap: "8px" }}>
                     <Button
                       size="slim"
@@ -272,18 +240,16 @@ const FAQPage = () => {
               autoComplete="off"
               placeholder="Enter question"
             />
-            <div style={{ marginTop: "12px" }}>
-              <Select
-                label="Answer Type"
-                options={[
-                  { label: "Text", value: "text" },
-                  { label: "Image", value: "image" },
-                  { label: "Video", value: "video" },
-                ]}
-                value={newFAQ.answerType}
-                onChange={handleInputChange("answerType")}
-              />
-            </div>
+            <Select
+              label="Answer Type"
+              options={[
+                { label: "Text", value: "text" },
+                { label: "Image", value: "image" },
+                { label: "Video", value: "video" },
+              ]}
+              value={newFAQ.answerType}
+              onChange={handleInputChange("answerType")}
+            />
             {newFAQ.answerType === "text" && (
               <TextField
                 label="Answer"
@@ -293,25 +259,6 @@ const FAQPage = () => {
                 multiline
                 placeholder="Enter text answer"
               />
-            )}
-            {(newFAQ.answerType === "image" ||
-              newFAQ.answerType === "video") && (
-              <div style={{ marginTop: "12px" }}>
-                <label
-                  style={{
-                    fontWeight: "bold",
-                    display: "block",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Upload {newFAQ.answerType === "image" ? "Image" : "Video"}:
-                </label>
-                <input
-                  type="file"
-                  accept={newFAQ.answerType === "image" ? "image/*" : "video/*"}
-                  onChange={(e) => handleFileUpload(e.target.files[0])}
-                />
-              </div>
             )}
           </Modal.Section>
         </Modal>

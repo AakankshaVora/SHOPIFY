@@ -1,4 +1,5 @@
 import { Category } from "../models/category.model.js";
+import { FAQ } from "../models/FAQ.model.js";
 import { MasterDB } from "../models/MasterDB.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
@@ -45,8 +46,8 @@ export const updateCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const category = await Category.findById(id);
-  
-  if(!category) {
+
+  if (!category) {
     throw new ApiError(400, "Category not found");
   }
 
@@ -76,7 +77,9 @@ export const updateCategory = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .json(new ApiResponse(200, updatedCategory, "Category updaed Successfully"));
+    .json(
+      new ApiResponse(200, updatedCategory, "Category updaed Successfully")
+    );
 });
 
 export const deleteCategory = async (req, res) => {
@@ -102,7 +105,7 @@ export const deleteCategory = async (req, res) => {
 
 export const getAllCategories = asyncHandler(async (req, res) => {
   const { storeId } = req.params;
-  
+
   const categories = await Category.find({ storeId });
 
   if (!categories) {
@@ -118,4 +121,38 @@ export const getAllCategories = asyncHandler(async (req, res) => {
         "Categories are fetched Successfully based on Store"
       )
     );
-})
+});
+
+export const getCategoriesWithFAQs = async (req, res) => {
+  try {
+    const { storeId } = req.params;
+
+    if (!storeId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Store ID is required." });
+    }
+
+    // Fetch categories with their FAQs
+    const categories = await Category.aggregate([
+      { $match: { storeId } }, 
+      {
+        $lookup: {
+          from: "faqs", // Mongoose converts "FAQ" model to "faqs" collection
+          localField: "_id",
+          foreignField: "categoryId",
+          as: "faqs",
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: categories,
+      message: "Categories with FAQs fetched successfully.",
+    });
+  } catch (error) {
+    console.error("Error fetching categories with FAQs:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};

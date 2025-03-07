@@ -4,6 +4,7 @@ import { Category } from "../models/category.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import mongoose from "mongoose";
 
 export const createFAQ = asyncHandler(async (req, res) => {
   const { storeId, question, answer } = req.body;
@@ -80,7 +81,7 @@ export const updateFAQ = asyncHandler(async (req, res) => {
   const { faqId } = req.params;
 
   const faq = await FAQ.findById(faqId);
-  let { question, answer, isActive } = req.body;
+  let { question, answer } = req.body;
 
   if (!question) {
     question = faq.question;
@@ -90,13 +91,10 @@ export const updateFAQ = asyncHandler(async (req, res) => {
     answer = faq.answer;
   }
 
-  if (!isActive) {
-    isActive = faq.isActive;
-  }
 
   const updateFAQ = await FAQ.findByIdAndUpdate(
     faqId,
-    { question, answer, isActive },
+    { question, answer },
     { new: true }
   );
 
@@ -180,4 +178,57 @@ export const getFAQAnalytics = asyncHandler(async (req, res) => {
     console.error("Error Searching FAQ:", error);
     throw new ApiError(500, "Something went wrong while Searching FAQ.");
   }
+});
+
+export const getFaqCountForCategory = asyncHandler(async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    // Validate categoryId before querying
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid categoryId format.",
+      });
+    }
+
+    const totalFAQs = await FAQ.countDocuments({ categoryId: new mongoose.Types.ObjectId(categoryId) });
+
+    return res.status(200).json({
+      success: true,
+      message: "FAQ count fetched successfully.",
+      data: {
+        categoryId,
+        totalFAQs,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching FAQ count:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
+  }
+});
+
+export const updateFAQByCategory = asyncHandler(async (req, res) => {
+  const { categoryId, faqId } = req.params;
+  let { question, answer } = req.body;
+
+  const faq = await FAQ.findOne({ _id: faqId, categoryId });
+  if (!faq) {
+    throw new ApiError(404, "FAQ not found in the given category");
+  }
+
+  // If question or answer is not provided, retain existing values
+  question = question || faq.question;
+  answer = answer || faq.answer;
+
+  const updatedFAQ = await FAQ.findOneAndUpdate(
+    { _id: faqId, categoryId },
+    { question, answer },
+    { new: true }
+  );
+
+  res.status(200).json(new ApiResponse(200, updatedFAQ, "FAQ Updated Successfully"));
 });
