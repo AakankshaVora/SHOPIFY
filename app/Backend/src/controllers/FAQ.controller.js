@@ -63,9 +63,11 @@ export const createFAQ = asyncHandler(async (req, res) => {
 export const getFAQsByCategory = asyncHandler(async (req, res) => {
   const { categoryId } = req.params;
   const faqs = await FAQ.find({ categoryId, isActive: true });
+
   if (faqs.length === 0) {
     throw new ApiError(404, "No FAQs found for this category.");
   }
+
   res
     .status(200)
     .json(
