@@ -8,6 +8,8 @@ import connectDB from "./database/connect.js";
 
 export const loader = async ({ request }) => {
   try {
+    console.log("request instance: ", request);
+    
     const { admin, session } = await authenticate.admin(request);
     if (!session) {
       return json({ error: "Unauthorized" }, { status: 401 });

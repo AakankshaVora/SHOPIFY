@@ -4,6 +4,7 @@ import { MasterDB } from "../models/MasterDB.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { authenticate } from "../../../shopify.server.js";
 
 export const createCategory = asyncHandler(async (req, res) => {
   const { storeId, categoryName, description } = req.body;
@@ -104,6 +105,16 @@ export const deleteCategory = async (req, res) => {
 };
 
 export const getAllCategories = asyncHandler(async (req, res) => {
+  const fetchRequest = new Request(`http://${req.headers.host}${req.url}`, {
+    method: req.method,
+    headers: req.headers,  // Pass headers correctly
+  });
+  console.log("Host : ",req.headers.host);
+  console.log("URL : ", req.url)
+  
+  const session = await authenticate.admin(fetchRequest)
+  console.log(session);
+  
   const { storeId } = req.params;
 
   const categories = await Category.find({ storeId });

@@ -9,14 +9,14 @@ import categoryRouter from "../src/Routes/category.route.js";
 import masterDBRouter from "../src/Routes/masterDB.route.js";
 import faqRouter from "../src/Routes/FAQ.route.js";
 
-// app.use(cors({
-//   origin: "http://localhost:5173", // Replace with your frontend's URL
-//   methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
-//   credentials: true, // Allow cookies if needed
-// }));
+app.use(cors({
+  origin: "http://localhost:5173", // Replace with your frontend's URL
+  methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
+  credentials: true, // Allow cookies if needed
+}));
 
 
-app.use(cors())
+// app.use(cors())
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
