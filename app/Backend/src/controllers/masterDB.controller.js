@@ -274,15 +274,15 @@ export const fetchAndSaveStoreDetails = asyncHandler(async (req, res) => {
             throw new ApiError(401, "Unauthorized request: Missing session");
         }
 
-        // Use authenticated Shopify session to fetch store details
-        const client = new shopify.api.clients.Rest({ session });
-        const response = await client.get({ path: "shop" });
+        // // Use authenticated Shopify session to fetch store details
+        // const client = new shopify.api.clients.Rest({ session });
+        // const response = await client.get({ path: "shop" });
 
-        if (!response.body || !response.body.shop) {
-            throw new ApiError(500, "Failed to retrieve shop data.");
-        }
+        // if (!response.body || !response.body.shop) {
+        //     throw new ApiError(500, "Failed to retrieve shop data.");
+        // }
 
-        const { name, domain, id, email, plan_name } = response.body.shop;
+        // const { name, domain, id, email, plan_name } = response.body.shop;
 
         // Upsert store data in MongoDB
         const store = await MasterDB.findOneAndUpdate(

@@ -55,9 +55,6 @@
 // export const registerWebhooks = shopify.registerWebhooks;
 // export const sessionStorage = shopify.sessionStorage;
 
-
-
-
 import "@shopify/shopify-app-remix/adapters/node";
 import {
   ApiVersion,
@@ -78,7 +75,7 @@ mongoose.connect(MONGO_URI, {
   .catch(err => console.error("MongoDB Connection Error:", err));
 
 // Use a different variable name to avoid conflicts
-const mongoSessionStorage = new MongoDBSessionStorage(MONGO_URI, "sessions");
+const mongoSessionStorage = new MongoDBSessionStorage(MONGO_URI, "FAQ");
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY || "67ac1ef823b5d331807bd8d09929620c",
@@ -89,6 +86,7 @@ const shopify = shopifyApp({
   authPathPrefix: "/auth",
   sessionStorage: mongoSessionStorage, // Use the renamed variable
   distribution: AppDistribution.AppStore,
+  isEmbeddedApp: true,
   future: {
     unstable_newEmbeddedAuthStrategy: true,
     removeRest: true,
