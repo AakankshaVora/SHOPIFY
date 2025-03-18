@@ -73,8 +73,7 @@ const CategoriesPage = () => {
     };
   
     fetchCategoriesWithFaqCount();
-  }, [storeId]); // Removed `categories` to prevent infinite re-renders.
-  
+  }, [categories.length]); 
 
   // Toggle modal visibility
   const toggleModal = useCallback(() => {

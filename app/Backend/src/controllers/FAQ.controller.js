@@ -4,10 +4,12 @@ import { Category } from "../models/category.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { translateText } from "../utils/translate.js";
 import mongoose from "mongoose";
 
 export const createFAQ = asyncHandler(async (req, res) => {
-  const { storeId, question, answer } = req.body;
+  const { storeId, question, answer, answerType } = req.body;
+  console.log("req.body", req.body);
 
   const cat = await Category.findOne({ storeId });
 
@@ -51,6 +53,7 @@ export const createFAQ = asyncHandler(async (req, res) => {
     categoryId,
     question,
     answer: answerUrl,
+    answerType,
   });
 
   await newFAQ.save();
@@ -60,21 +63,78 @@ export const createFAQ = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, newFAQ, "FAQ created Successfully."));
 });
 
+// export const getFAQsByCategory = asyncHandler(async (req, res) => {
+//   const { categoryId } = req.params;
+  
+//   const faqs = await FAQ.find({ categoryId, isActive: true });  
+
+//   if (faqs.length === 0) {
+//     throw new ApiError(404, "No FAQs found for this category.");
+//   }
+
+//   const translatedFaqs = await Promise.all(
+//     faqs.map(async (faq) => {
+      
+//       const translatedQuestion = await translateText(faq.question, "fr");
+//       const translatedAnswer = await translateText(faq.answer, "fr");
+
+//       console.log("translatedQuestion", translatedQuestion);
+//       console.log("translatedAnswer", translatedAnswer);
+      
+
+//       faq.question = translatedQuestion;
+//       faq.answer = translatedAnswer;
+//     })
+//   );
+
+//   console.log(translatedFaqs);
+
+//   res
+//     .status(200)
+//     .json(
+//       new ApiResponse(
+//         200,
+//         faqs,
+//         "FAQs are fetched Successfully bassed on Category"
+//       )
+//     );
+// });
+
 export const getFAQsByCategory = asyncHandler(async (req, res) => {
   const { categoryId } = req.params;
-  const faqs = await FAQ.find({ categoryId, isActive: true });
+  const { language = 'fr' } = req.query;  // Get language from query params, default to English
+
+  const faqs = await FAQ.find({ categoryId, isActive: true });  
 
   if (faqs.length === 0) {
     throw new ApiError(404, "No FAQs found for this category.");
   }
+
+  const translatedFaqs = await Promise.all(
+    faqs.map(async (faq) => {
+      const translatedQuestion = await translateText(faq.question, language);
+      const translatedAnswer = await translateText(faq.answer, language);
+
+      console.log("translatedQuestion:", translatedQuestion);
+      console.log("translatedAnswer:", translatedAnswer);
+
+      return {
+        ...faq.toObject(),
+        question: translatedQuestion,
+        answer: translatedAnswer
+      };
+    })
+  );
+
+  console.log("Translated FAQs:", translatedFaqs);
 
   res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        faqs,
-        "FAQs are fetched Successfully bassed on Category"
+        translatedFaqs,
+        "FAQs are fetched successfully based on Category"
       )
     );
 });
@@ -92,7 +152,6 @@ export const updateFAQ = asyncHandler(async (req, res) => {
   if (!answer) {
     answer = faq.answer;
   }
-
 
   const updateFAQ = await FAQ.findByIdAndUpdate(
     faqId,
@@ -194,7 +253,9 @@ export const getFaqCountForCategory = asyncHandler(async (req, res) => {
       });
     }
 
-    const totalFAQs = await FAQ.countDocuments({ categoryId: new mongoose.Types.ObjectId(categoryId) });
+    const totalFAQs = await FAQ.countDocuments({
+      categoryId: new mongoose.Types.ObjectId(categoryId),
+    });
 
     return res.status(200).json({
       success: true,
@@ -232,5 +293,7 @@ export const updateFAQByCategory = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  res.status(200).json(new ApiResponse(200, updatedFAQ, "FAQ Updated Successfully"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, updatedFAQ, "FAQ Updated Successfully"));
 });

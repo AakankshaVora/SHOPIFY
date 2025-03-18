@@ -129,21 +129,80 @@ export const getFaqCountByCategory = async (categoryId) => {
 
 export const getCategoriesWithFAQs = async (storeId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/category/get-data/${storeId}`);
+    const response = await axios.get(
+      `${API_BASE_URL}/category/get-data/${storeId}`,
+    );
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || "Failed to fetch categories with FAQs");
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch categories with FAQs",
+    );
   }
 };
 
-export const updateFAQByCategoryAndId = async (categoryId, faqId, updatedData) => {
+export const updateFAQByCategoryAndId = async (
+  categoryId,
+  faqId,
+  updatedData,
+) => {
   try {
     const response = await axios.put(
       `${API_BASE_URL}/faq/update-faq/${categoryId}/${faqId}`,
-      updatedData
+      updatedData,
     );
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to update FAQ");
   }
 };
+
+export const addFAQ = async (storeId, question, answer, mediaFile, answerType) => {
+  try {
+    console.log("Adding new FAQ:", question, answer, answerType);
+    const data = {
+      storeId,
+      question,
+      answer,
+      answerType,
+      mediaFile
+    };  
+
+    console.log("data : ", data);
+
+    const response = await axios.post(
+      `${API_BASE_URL}/faq/create`,
+      data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+
+    return response;
+  } catch (error) {
+    throw new Error(error.message || "Failed to add FAQ");
+  }
+};
+
+// export const addFAQ = async (storeId, question, answer) => {
+//   try {
+//     console.log("Adding new FAQ:", question, answer);
+
+//     const formData = new FormData();
+//     formData.append("storeId", storeId);
+//     formData.append("question", question);
+//     formData.append("answer", answer);
+
+
+//     const response = await axios.post(`${API_BASE_URL}/faq/create`, formData,{
+//       headers: {
+        
+//       },
+//     });
+
+//     return response;
+//   } catch (error) {
+//     throw new Error(error.message || "Failed to add FAQ");
+//   }
+// };

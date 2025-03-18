@@ -64,6 +64,8 @@ import {
 import { MongoDBSessionStorage } from "@shopify/shopify-app-session-storage-mongodb";
 import mongoose from "mongoose";
 
+
+
 // MongoDB connection
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://meet:meet123@cluster0.g0fbads.mongodb.net/FAQ?retryWrites=true&w=majority";
 
@@ -104,4 +106,4 @@ export const authenticate = shopify.authenticate;
 export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
-export const sessionStorage = mongoSessionStorage; // Use the renamed variable here too
+export const sessionStorage = mongoSessionStorage; 
