@@ -3,9 +3,9 @@ import axios from "axios";
 const API_BASE_URL = "http://localhost:5000/api"; // Base URL for your API
 
 // Fetch all categories by store ID
-export const fetchAllCategories = async (storeId) => {
+export const fetchAllCategories = async (storeId, selectedLanguage) => {
   const response = await fetch(
-    `${API_BASE_URL}/category/all-category/${storeId}`,
+    `${API_BASE_URL}/category/all-category/${storeId}?language=${selectedLanguage}`,
   );
 
   if (!response.ok) {
@@ -61,9 +61,9 @@ export const deleteCategory = async (categoryId) => {
   }
 };
 
-export const fetchFaqsByCategory = async (categoryId) => {
+export const fetchFaqsByCategory = async (categoryId, selectedLanguage) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/faq/${categoryId}`);
+    const response = await axios.get(`${API_BASE_URL}/faq/${categoryId}?language=${selectedLanguage}`);
     console.log("response:", response.data.data);
     return response.data.data;
   } catch (error) {
@@ -127,23 +127,82 @@ export const getFaqCountByCategory = async (categoryId) => {
   }
 };
 
-export const getCategoriesWithFAQs = async (storeId) => {
+export const getCategoriesWithFAQs = async (storeId, selectedLanguage) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/category/get-data/${storeId}`);
+    const response = await axios.get(
+      `${API_BASE_URL}/category/get-data/${storeId}?language=${selectedLanguage}`,
+    );
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || "Failed to fetch categories with FAQs");
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch categories with FAQs",
+    );
   }
 };
 
-export const updateFAQByCategoryAndId = async (categoryId, faqId, updatedData) => {
+export const updateFAQByCategoryAndId = async (
+  categoryId,
+  faqId,
+  updatedData,
+) => {
   try {
     const response = await axios.put(
       `${API_BASE_URL}/faq/update-faq/${categoryId}/${faqId}`,
-      updatedData
+      updatedData,
     );
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to update FAQ");
   }
 };
+
+export const addFAQ = async (storeId, question, answer, mediaFile, answerType) => {
+  try {
+    console.log("Adding new FAQ:", question, answer, answerType);
+    const data = {
+      storeId,
+      question,
+      answer,
+      answerType,
+      mediaFile
+    };  
+
+    console.log("data : ", data);
+
+    const response = await axios.post(
+      `${API_BASE_URL}/faq/create`,
+      data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+
+    return response;
+  } catch (error) {
+    throw new Error(error.message || "Failed to add FAQ");
+  }
+};
+
+// export const addFAQ = async (storeId, question, answer) => {
+//   try {
+//     console.log("Adding new FAQ:", question, answer);
+
+//     const formData = new FormData();
+//     formData.append("storeId", storeId);
+//     formData.append("question", question);
+//     formData.append("answer", answer);
+
+
+//     const response = await axios.post(`${API_BASE_URL}/faq/create`, formData,{
+//       headers: {
+        
+//       },
+//     });
+
+//     return response;
+//   } catch (error) {
+//     throw new Error(error.message || "Failed to add FAQ");
+//   }
+// };

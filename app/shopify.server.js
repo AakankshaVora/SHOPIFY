@@ -138,10 +138,16 @@ import {
 import { MongoDBSessionStorage } from "@shopify/shopify-app-session-storage-mongodb";
 import express from "express";
 
+<<<<<<< HEAD
 const app = express();
 app.use(express.json());
 
 // MongoDB connection with session storage
+=======
+
+
+// MongoDB connection
+>>>>>>> 410db93e735bc68501a4d6ed3984907bed74a6bd
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://meet:meet123@cluster0.g0fbads.mongodb.net/FAQ?retryWrites=true&w=majority";
 
 let mongoSessionStorage;
@@ -192,4 +198,8 @@ export const authenticate = shopify.authenticate;
 export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
+<<<<<<< HEAD
 export const sessionStorage = mongoSessionStorage;
+=======
+export const sessionStorage = mongoSessionStorage; 
+>>>>>>> 410db93e735bc68501a4d6ed3984907bed74a6bd

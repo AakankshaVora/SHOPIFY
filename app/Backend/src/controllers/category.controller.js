@@ -4,6 +4,7 @@ import { MasterDB } from "../models/MasterDB.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { translateText } from "../utils/translate.js";
 // import { authenticate } from "../../../shopify.server.js";
 
 export const createCategory = asyncHandler(async (req, res) => {
@@ -120,6 +121,9 @@ export const getAllCategories = asyncHandler(async (req, res) => {
 
   
   const { storeId } = req.params;
+  const {language} = req.query;
+
+  
 
   const categories = await Category.find({ storeId });
 
@@ -127,21 +131,97 @@ export const getAllCategories = asyncHandler(async (req, res) => {
     throw new ApiError(404, "No Categories found for this store.");
   }
 
+  const translatedCategories = await Promise.all(
+    categories.map(async (category) => {
+      const translatedName = await translateText(category.categoryName, language);
+      const translatedDescription = await translateText(category.description, language);  
+
+      return {
+        ...category.toObject(),
+        categoryName: translatedName,
+        description: translatedDescription
+      };
+    })
+  );
+
   res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        categories,
+        translatedCategories,
         "Categories are fetched Successfully based on Store"
       )
     );
 });
 
+// export const getCategoriesWithFAQs = async (req, res) => {
+
+//   try {
+//     const { storeId } = req.params;
+//     const { language } = req.query;
+    
+//     if (!storeId) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Store ID is required." });
+//     }
+
+//     // Fetch categories with their FAQs
+//     const categories = await Category.aggregate([
+//       { $match: { storeId } }, 
+//       {
+//         $lookup: {
+//           from: "faqs", // Mongoose converts "FAQ" model to "faqs" collection
+//           localField: "_id",
+//           foreignField: "categoryId",
+//           as: "faqs",
+//         },
+//       },
+//     ]);
+
+//     const translatedCategories = await Promise.all(
+//       categories.data.map(async (category) => {
+//         const translatedName = await translateText(category.categoryName, language);
+    
+//         // Translate FAQs within the category
+//         const translatedFAQs = await Promise.all(
+//           category.faqs.map(async (faq) => {
+//             const translatedQuestion = await translateText(faq.question, language);
+//             const translatedAnswer = faq.answerType === 'text' ? await translateText(faq.answer, language) : faq.answer;
+    
+//             return {
+//               ...faq,
+//               question: translatedQuestion,
+//               answer: translatedAnswer
+//             };
+//           })
+//         );
+    
+//         return {
+//           ...category,
+//           categoryName: translatedName,
+//           faqs: translatedFAQs
+//         };
+//       })
+//     );
+    
+//     res.status(200).json({
+//       success: true,
+//       data: translatedCategories,
+//       message: "Categories with FAQs fetched successfully.",
+//     });
+//   } catch (error) {
+//     console.error("Error fetching categories with FAQs:", error);
+//     res.status(500).json({ success: false, message: "Internal Server Error" });
+//   }
+// };
+
 export const getCategoriesWithFAQs = async (req, res) => {
   try {
     const { storeId } = req.params;
-
+    const { language } = req.query;
+    
     if (!storeId) {
       return res
         .status(400)
@@ -161,9 +241,35 @@ export const getCategoriesWithFAQs = async (req, res) => {
       },
     ]);
 
+    const translatedCategories = await Promise.all(
+      categories.map(async (category) => {
+        const translatedName = await translateText(category.categoryName, language);
+    
+        // Translate FAQs within the category
+        const translatedFAQs = await Promise.all(
+          category.faqs.map(async (faq) => {
+            const translatedQuestion = await translateText(faq.question, language);
+            const translatedAnswer = faq.answerType === 'text' ? await translateText(faq.answer, language) : faq.answer;
+    
+            return {
+              ...faq,
+              question: translatedQuestion,
+              answer: translatedAnswer
+            };
+          })
+        );
+    
+        return {
+          ...category,
+          categoryName: translatedName,
+          faqs: translatedFAQs
+        };
+      })
+    );
+    
     res.status(200).json({
       success: true,
-      data: categories,
+      data: translatedCategories,
       message: "Categories with FAQs fetched successfully.",
     });
   } catch (error) {

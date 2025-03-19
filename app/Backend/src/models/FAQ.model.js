@@ -19,6 +19,12 @@ const FAQSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    answerType: {
+      type: String,
+      enum: ["text", "image", "video"],
+      required: true,
+      default: "text",
+    },
     isActive: {
       type: Boolean,
       default: true,

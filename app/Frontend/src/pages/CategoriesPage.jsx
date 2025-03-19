@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Page,
@@ -19,9 +19,14 @@ import {
   deleteCategory,
   getFaqCountByCategory,
 } from "../../api/index.js"; // Import API functions
+import { LanguageContext } from "../context/LanguageContext.jsx";
 
 const CategoriesPage = () => {
   const navigate = useNavigate();
+  const { selectedLanguage } = useContext(LanguageContext);
+
+  console.log("Selected Language in category Page:", selectedLanguage);
+  
 
   const storeId = "offline_test-learning-app.myshopify.com"; // Replace with actual store ID
 
@@ -45,7 +50,7 @@ const CategoriesPage = () => {
       try {
         setLoading(true);
   
-        const categories = await fetchAllCategories(storeId);
+        const categories = await fetchAllCategories(storeId, selectedLanguage);
         if (!Array.isArray(categories)) {
           console.error("Invalid categories data:", categories);
           setLoading(false);
@@ -73,8 +78,7 @@ const CategoriesPage = () => {
     };
   
     fetchCategoriesWithFaqCount();
-  }, [storeId]); // Removed `categories` to prevent infinite re-renders.
-  
+  }, [categories.length, selectedLanguage]); 
 
   // Toggle modal visibility
   const toggleModal = useCallback(() => {
