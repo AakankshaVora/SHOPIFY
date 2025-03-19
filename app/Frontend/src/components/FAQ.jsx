@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Page,
@@ -12,6 +12,7 @@ import {
   Select,
 } from "@shopify/polaris";
 import { fetchFaqsByCategory, deleteFAQById, updateFAQById } from "../../api/index.js";
+import { LanguageContext } from "../context/LanguageContext.jsx";
 
 const FAQ = () => {
   const [searchParams] = useSearchParams();
@@ -29,11 +30,12 @@ const FAQ = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const { selectedLanguage } = useContext(LanguageContext);
 
   useEffect(() => {
     if (categoryId) {
       setLoading(true);
-      fetchFaqsByCategory(categoryId)
+      fetchFaqsByCategory(categoryId, selectedLanguage)
         .then((data) => {
           setFaqs(data || []);
           setLoading(false);

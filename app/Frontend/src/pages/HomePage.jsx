@@ -1,13 +1,36 @@
 import React from "react";
-import { Page, Layout, Card, Button, Text } from "@shopify/polaris";
+import { Page, Layout, Card, Button, Text, Select } from "@shopify/polaris";
+import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { LanguageContext } from "../context/LanguageContext";
 
-const HomePage = () => {
+const HomePage = () => {  
   const stats = {
     totalCategories: 5,
     totalFAQs: 20,
     averageRating: 4.5,
     faqViews: 350,
   };
+
+  const navigate = useNavigate();
+
+  const { selectedLanguage, setSelectedLanguage } = useContext(LanguageContext);
+
+  const handleLanguageChange = (value) => {
+    setSelectedLanguage(value);
+    console.log("Selected Language:", value); // Replace this with your translation logic
+  };
+  
+  console.log("Selected Language in HomePage:", selectedLanguage);
+  
+
+  const languageOptions = [
+    { label: "English", value: "en" },
+    { label: "French", value: "fr" },
+    { label: "Spanish", value: "es" },
+    { label: "German", value: "de" },
+    { label: "Hindi", value: "hi" },
+  ];
 
   return (
     <div
@@ -20,9 +43,11 @@ const HomePage = () => {
       <Page title="FAQ Generator Dashboard" subtitle="Manage Your Store's FAQs">
         {/* Header Section */}
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "20px" }}>
-          <Button primary onClick={() => (window.location.href = "/change-email")} style={{ backgroundColor: "black", color: "white" }}>
-            Change Business Email
-          </Button>
+          <Select
+            options={languageOptions}
+            onChange={handleLanguageChange}
+            value={selectedLanguage}
+          />
         </div>
 
         <Layout>
@@ -131,7 +156,7 @@ const HomePage = () => {
                   <Button
                     primary
                     fullWidth
-                    onClick={() => (window.location.href = "/categories")}
+                    onClick={() => navigate("/categories")}
                   >
                     Manage Categories
                   </Button>
@@ -151,7 +176,7 @@ const HomePage = () => {
                   <Button
                     primary
                     fullWidth
-                    onClick={() => (window.location.href = "/faqs")}
+                    onClick={() => navigate("/faqs")}
                   >
                     Manage FAQs
                   </Button>

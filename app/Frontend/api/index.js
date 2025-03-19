@@ -3,9 +3,9 @@ import axios from "axios";
 const API_BASE_URL = "http://localhost:5000/api"; // Base URL for your API
 
 // Fetch all categories by store ID
-export const fetchAllCategories = async (storeId) => {
+export const fetchAllCategories = async (storeId, selectedLanguage) => {
   const response = await fetch(
-    `${API_BASE_URL}/category/all-category/${storeId}`,
+    `${API_BASE_URL}/category/all-category/${storeId}?language=${selectedLanguage}`,
   );
 
   if (!response.ok) {
@@ -61,9 +61,9 @@ export const deleteCategory = async (categoryId) => {
   }
 };
 
-export const fetchFaqsByCategory = async (categoryId) => {
+export const fetchFaqsByCategory = async (categoryId, selectedLanguage) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/faq/${categoryId}`);
+    const response = await axios.get(`${API_BASE_URL}/faq/${categoryId}?language=${selectedLanguage}`);
     console.log("response:", response.data.data);
     return response.data.data;
   } catch (error) {
@@ -127,10 +127,10 @@ export const getFaqCountByCategory = async (categoryId) => {
   }
 };
 
-export const getCategoriesWithFAQs = async (storeId) => {
+export const getCategoriesWithFAQs = async (storeId, selectedLanguage) => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/category/get-data/${storeId}`,
+      `${API_BASE_URL}/category/get-data/${storeId}?language=${selectedLanguage}`,
     );
     return response.data;
   } catch (error) {

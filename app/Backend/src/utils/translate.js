@@ -8,7 +8,6 @@ import translate from "@iamtraction/google-translate";
  */
 export const translateText = async (text, targetLanguage) => {
     try {
-        console.log(`Translating text to ${targetLanguage}:`, text);
         const res = await translate(text, { to: targetLanguage }); // Use 'await' here!
         return res.text;  // Properly return the translated text
     } catch (err) {

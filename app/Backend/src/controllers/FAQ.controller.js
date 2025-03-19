@@ -102,7 +102,7 @@ export const createFAQ = asyncHandler(async (req, res) => {
 
 export const getFAQsByCategory = asyncHandler(async (req, res) => {
   const { categoryId } = req.params;
-  const { language = 'fr' } = req.query;  // Get language from query params, default to English
+  const { language } = req.query;  // Get language from query params, default to English
 
   const faqs = await FAQ.find({ categoryId, isActive: true });  
 
@@ -115,9 +115,6 @@ export const getFAQsByCategory = asyncHandler(async (req, res) => {
       const translatedQuestion = await translateText(faq.question, language);
       const translatedAnswer = await translateText(faq.answer, language);
 
-      console.log("translatedQuestion:", translatedQuestion);
-      console.log("translatedAnswer:", translatedAnswer);
-
       return {
         ...faq.toObject(),
         question: translatedQuestion,
@@ -125,8 +122,6 @@ export const getFAQsByCategory = asyncHandler(async (req, res) => {
       };
     })
   );
-
-  console.log("Translated FAQs:", translatedFaqs);
 
   res
     .status(200)

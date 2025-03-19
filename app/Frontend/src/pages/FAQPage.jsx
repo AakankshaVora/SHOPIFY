@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useContext } from "react";
 import {
   Page,
   Layout,
@@ -9,12 +9,18 @@ import {
   TextField,
   Select,
 } from "@shopify/polaris";
-import { getCategoriesWithFAQs, updateFAQByCategoryAndId, deleteFAQById } from "../../api/index.js";
+import {
+  getCategoriesWithFAQs,
+  updateFAQByCategoryAndId,
+  deleteFAQById,
+} from "../../api/index.js";
+import { LanguageContext } from "../context/LanguageContext.jsx";
 
 const FAQPage = () => {
+  const { selectedLanguage } = useContext(LanguageContext);
+
   const storeId = "offline_test-learning-app.myshopify.com";
   const [categories, setCategories] = useState([]);
-
   const [modalActive, setModalActive] = useState(false);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(null);
   const [newFAQ, setNewFAQ] = useState({
@@ -28,7 +34,7 @@ const FAQPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    getCategoriesWithFAQs(storeId)
+    getCategoriesWithFAQs(storeId, selectedLanguage)
       .then((response) => {
         if (response && response.success && Array.isArray(response.data)) {
           setCategories(response.data);
@@ -38,7 +44,7 @@ const FAQPage = () => {
       })
       .catch((error) => {
         console.error("Failed to fetch categories:", error);
-      });
+      })
   }, [storeId]);
 
   const toggleModal = useCallback(() => {
@@ -100,7 +106,7 @@ const FAQPage = () => {
     const faqId = categories[categoryIndex].faqs[faqIndex]._id;
 
     console.log("Deleting FAQ:", faqId);
-    
+
     try {
       await deleteFAQById(faqId);
       const updatedCategories = [...categories];
@@ -125,7 +131,7 @@ const FAQPage = () => {
     faqs.filter(
       (faq) =>
         faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+        faq.answer.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
   return (
