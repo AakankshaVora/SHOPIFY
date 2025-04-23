@@ -3,14 +3,16 @@ import{
    addRating,
    getAverageRatingFAQ,
    getRatingForFAQ,
-   updateRating
+   updateRating,
+   deleteRating
 } from "../controllers/rating.controller.js"
 
 const router = express.Router();
 
-router.post("/add-Rating", addRating);
-router.get("/get-faq-rating", getRatingForFAQ); 
+router.post("/add-Rating/:FAQId", addRating);
+router.get("/get-faq-rating/:FAQId", getRatingForFAQ); 
 router.put("/get-avg-rating", getAverageRatingFAQ); 
-router.delete("/update-rating", updateRating);
+router.delete("/delete-rating/:ratingId", deleteRating);
+router.put("/update-rating/:ratingId", updateRating);
 
 export default router;

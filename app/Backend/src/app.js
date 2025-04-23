@@ -8,6 +8,7 @@ app.use(express.urlencoded({ extended: true })); // for parsing application/x-ww
 import categoryRouter from "../src/Routes/category.route.js";
 import masterDBRouter from "../src/Routes/masterDB.route.js";
 import faqRouter from "../src/Routes/FAQ.route.js";
+import ratingRouter from "../src/Routes/rating.route.js"
 
 app.use(cors({
   origin: "http://localhost:5173", // Replace with your frontend's URL
@@ -34,5 +35,6 @@ app.use(cookieParser());
 app.use("/api/category", categoryRouter);
 app.use("/api/masterDB", masterDBRouter);
 app.use("/api/faq", faqRouter);
+app.use("/api/rating", ratingRouter);
 
 export { app };
