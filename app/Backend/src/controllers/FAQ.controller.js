@@ -7,61 +7,90 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { translateText } from "../utils/translate.js";
 import mongoose from "mongoose";
 
+// export const createFAQ = asyncHandler(async (req, res) => {
+//   const { storeId, question, answer, answerType } = req.body;
+//   console.log("req.body", req.body);
+
+//   const cat = await Category.findOne({ storeId });
+
+//   const categoryId = cat._id;
+
+//   const category = await Category.findOne({ _id: categoryId, storeId });
+
+//   if (!category) {
+//     throw new ApiError(
+//       404,
+//       "Category not Found or dosen't belongs to this store."
+//     );
+//   }
+
+//   let answerUrl = answer;
+
+//   if (req.files && req.files.media) {
+//     const { media } = req.files;
+
+//     try {
+//       const cloudinaryResponse = await cloudinary.uploader.upload(
+//         media.tempFilePath,
+//         {
+//           folder: "FAQ_MEDIA",
+//           resource_type: "auto",
+//         }
+//       );
+
+//       if (!cloudinaryResponse || cloudinaryResponse.error) {
+//         throw new ApiError(500, "Failed to upload media.");
+//       }
+
+//       answerUrl = cloudinaryResponse.secure_url; // Store Cloudinary URL in answer field
+//     } catch (error) {
+//       throw new ApiError(500, "Failed to upload media.");
+//     }
+//   }
+
+//   const newFAQ = new FAQ({
+//     storeId,
+//     categoryId,
+//     question,
+//     answer: answerUrl,
+//     answerType,
+//   });
+
+//   await newFAQ.save();
+
+//   res
+//     .status(201)
+//     .json(new ApiResponse(200, newFAQ, "FAQ created Successfully."));
+// });
+
 export const createFAQ = asyncHandler(async (req, res) => {
-  const { storeId, question, answer, answerType } = req.body;
-  console.log("req.body", req.body);
+  const { storeId, question, answer } = req.body;
 
-  const cat = await Category.findOne({ storeId });
-
-  const categoryId = cat._id;
-
-  const category = await Category.findOne({ _id: categoryId, storeId });
+  // Find category by storeId
+  const category = await Category.findOne({ storeId });
 
   if (!category) {
     throw new ApiError(
       404,
-      "Category not Found or dosen't belongs to this store."
+      "Category not found or doesn't belong to this store."
     );
   }
 
-  let answerUrl = answer;
-
-  if (req.files && req.files.media) {
-    const { media } = req.files;
-
-    try {
-      const cloudinaryResponse = await cloudinary.uploader.upload(
-        media.tempFilePath,
-        {
-          folder: "FAQ_MEDIA",
-          resource_type: "auto",
-        }
-      );
-
-      if (!cloudinaryResponse || cloudinaryResponse.error) {
-        throw new ApiError(500, "Failed to upload media.");
-      }
-
-      answerUrl = cloudinaryResponse.secure_url; // Store Cloudinary URL in answer field
-    } catch (error) {
-      throw new ApiError(500, "Failed to upload media.");
-    }
-  }
-
+  // Create new FAQ entry
   const newFAQ = new FAQ({
     storeId,
-    categoryId,
+    categoryId: category._id,
     question,
-    answer: answerUrl,
-    answerType,
+    answer,
   });
 
   await newFAQ.save();
 
   res
     .status(201)
-    .json(new ApiResponse(200, newFAQ, "FAQ created Successfully."));
+    .json(new ApiResponse(200, newFAQ, "FAQ created successfully."));
 });
+
 
 // export const getFAQsByCategory = asyncHandler(async (req, res) => {
 //   const { categoryId } = req.params;

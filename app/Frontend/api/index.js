@@ -156,34 +156,34 @@ export const updateFAQByCategoryAndId = async (
   }
 };
 
-export const addFAQ = async (storeId, question, answer, mediaFile, answerType) => {
-  try {
-    console.log("Adding new FAQ:", question, answer, answerType);
-    const data = {
-      storeId,
-      question,
-      answer,
-      answerType,
-      mediaFile
-    };  
+// export const addFAQ = async (storeId, question, answer) => {
+//   try {
+//     console.log("Adding new FAQ:", question, answer, answerType);
+//     const data = {
+//       storeId,
+//       question,
+//       answer,
+//       answerType,
+//       mediaFile
+//     };  
 
-    console.log("data : ", data);
+//     console.log("data : ", data);
 
-    const response = await axios.post(
-      `${API_BASE_URL}/faq/create`,
-      data,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
-    );
+//     const response = await axios.post(
+//       `${API_BASE_URL}/faq/create`,
+//       data,
+//       {
+//         headers: {
+//           "Content-Type": "multipart/form-data",
+//         },
+//       },
+//     );
 
-    return response;
-  } catch (error) {
-    throw new Error(error.message || "Failed to add FAQ");
-  }
-};
+//     return response;
+//   } catch (error) {
+//     throw new Error(error.message || "Failed to add FAQ");
+//   }
+// };
 
 // export const addFAQ = async (storeId, question, answer) => {
 //   try {
@@ -206,3 +206,32 @@ export const addFAQ = async (storeId, question, answer, mediaFile, answerType) =
 //     throw new Error(error.message || "Failed to add FAQ");
 //   }
 // };
+
+export const addFAQ = async (storeId, question, answer) => {
+  try {
+    console.log("Adding new FAQ:", storeId, question, answer);
+
+    const data = {
+      storeId,
+      question,
+      answer,
+    };
+
+    console.log("data: ", data);
+
+    const response = await axios.post(
+      `${API_BASE_URL}/faq/create`,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    throw new Error(error.message || "Failed to add FAQ");
+  }
+};
+
