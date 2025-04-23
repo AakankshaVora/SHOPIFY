@@ -340,7 +340,6 @@ const FAQ = () => {
     (faq?.question || "").toLowerCase().includes(normalizedSearchQuery) ||
     (faq?.answer || "").toLowerCase().includes(normalizedSearchQuery)
   );
-  
 
   const renderStars = (rating) => {
     const starCount = parseInt(rating, 10) || 0;
