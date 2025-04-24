@@ -321,3 +321,28 @@ export const updateFAQByCategory = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, updatedFAQ, "FAQ Updated Successfully"));
 });
+
+
+export const createFAQByCategory = asyncHandler(async (req, res) => {
+  const { categoryId } = req.params;
+  const { question, answer, storeId } = req.body;
+
+  if (!question || !answer) {
+    throw new ApiError(400, "Question and answer are required");
+  }
+
+  if(!storeId) {
+    throw new ApiError(400, "Store ID is required");
+  }
+
+  const newFAQ = await FAQ.create({
+    question,
+    answer,
+    categoryId,
+    storeId
+  });
+
+  res
+    .status(201)
+    .json(new ApiResponse(201, newFAQ, "FAQ Created Successfully"));
+})

@@ -235,3 +235,19 @@ export const addFAQ = async (storeId, question, answer) => {
   }
 };
 
+export const createFAQByCategory = async (categoryId, storeId, question, answer) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/faq/create-faq/${categoryId}`,
+      {
+        storeId,
+        question,
+        answer,
+        categoryId,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Failed to create FAQ");
+  }
+};

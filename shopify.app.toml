@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "c2643c6cd114dab497b2e1764c69a9df"
-application_url = "https://kenny-phil-characterized-functioning.trycloudflare.com"
+application_url = "https://avenue-butts-leon-g.trycloudflare.com"
 embedded = true
 name = "FAQ"
 handle = "faq-39"
@@ -23,9 +23,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://kenny-phil-characterized-functioning.trycloudflare.com/auth/callback",
-  "https://kenny-phil-characterized-functioning.trycloudflare.com/auth/shopify/callback",
-  "https://kenny-phil-characterized-functioning.trycloudflare.com/api/auth/callback"
+  "https://avenue-butts-leon-g.trycloudflare.com/auth/callback",
+  "https://avenue-butts-leon-g.trycloudflare.com/auth/shopify/callback",
+  "https://avenue-butts-leon-g.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

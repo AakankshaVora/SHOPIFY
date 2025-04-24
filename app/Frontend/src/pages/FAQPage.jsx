@@ -13,6 +13,7 @@ import {
   getCategoriesWithFAQs,
   updateFAQByCategoryAndId,
   deleteFAQById,
+  createFAQByCategory
 } from "../../api/index.js";
 import { LanguageContext } from "../context/LanguageContext.jsx";
 
@@ -64,28 +65,65 @@ const FAQPage = () => {
     setNewFAQ((prev) => ({ ...prev, file }));
   };
 
+  // const handleAddOrEditFAQ = async () => {
+  //   const updatedCategories = [...categories];
+  //   const category = updatedCategories[currentCategoryIndex];
+  //   const faqs = category.faqs;
+
+  //   if (isEditing) {
+  //     const faqId = faqs[editingIndex]._id; // Assuming each FAQ has a unique _id
+  //     try {
+  //       await updateFAQByCategoryAndId(category._id, faqId, newFAQ); // API call
+  //       faqs[editingIndex] = { ...faqs[editingIndex], ...newFAQ };
+  //       setCategories(updatedCategories);
+  //     } catch (error) {
+  //       console.error("Error updating FAQ:", error);
+  //     }
+  //   } else {
+  //     faqs.push({ ...newFAQ, rating: 0 }); // Default static rating
+  //     setCategories(updatedCategories);
+  //   }
+
+  //   toggleModal();
+  // };
+
   const handleAddOrEditFAQ = async () => {
     const updatedCategories = [...categories];
     const category = updatedCategories[currentCategoryIndex];
     const faqs = category.faqs;
-
+  
     if (isEditing) {
-      const faqId = faqs[editingIndex]._id; // Assuming each FAQ has a unique _id
+      const faqId = faqs[editingIndex]._id;
       try {
-        await updateFAQByCategoryAndId(category._id, faqId, newFAQ); // API call
+        await updateFAQByCategoryAndId(category._id, faqId, newFAQ);
         faqs[editingIndex] = { ...faqs[editingIndex], ...newFAQ };
         setCategories(updatedCategories);
       } catch (error) {
         console.error("Error updating FAQ:", error);
       }
     } else {
-      faqs.push({ ...newFAQ, rating: 0 }); // Default static rating
-      setCategories(updatedCategories);
+      try {
+        const response = await createFAQByCategory(
+          category._id,
+          storeId,
+          newFAQ.question,
+          newFAQ.answer
+        );
+  
+        if (response.success) {
+          faqs.push({ ...response.data }); // Add returned FAQ object
+          setCategories(updatedCategories);
+        } else {
+          console.error("Failed to create FAQ:", response.message);
+        }
+      } catch (error) {
+        console.error("Error creating FAQ:", error);
+      }
     }
-
+  
     toggleModal();
   };
-
+  
   const handleEditFAQ = (categoryIndex, faqIndex) => {
     setCurrentCategoryIndex(categoryIndex);
     const selectedFAQ = categories[categoryIndex].faqs[faqIndex];

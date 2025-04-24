@@ -8,7 +8,8 @@ import{
     searchFAQ,
     getFAQAnalytics,
     getFaqCountForCategory,
-    updateFAQByCategory
+    updateFAQByCategory,
+    createFAQByCategory
 } from "../controllers/FAQ.controller.js"
 
 const router = express.Router();
@@ -22,5 +23,6 @@ router.get("/store", getAllFAQForstore);
 router.get("/search",searchFAQ);
 router.get("/analytics",getFAQAnalytics);
 router.get("/count/:categoryId",getFaqCountForCategory);
+router.post("/create-faq/:categoryId", createFAQByCategory);
 
 export default router;
