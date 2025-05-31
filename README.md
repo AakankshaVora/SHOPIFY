@@ -67,8 +67,8 @@ SHOPIFY/
 
 Clone the repository:
 ```bash
-git clone https://github.com/Meet026/shopify-faq-app.git
-cd shopify-faq-app
+https://github.com/AakankshaVora/SHOPIFY.git
+cd SHOPIFY
 ```
 
 Install dependencies:
